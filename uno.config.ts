@@ -9,7 +9,7 @@ import {
 export default defineConfig({
   theme: {
     font: {
-      sans: ['var(--font-atkinson)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+      sans: ['var(--font-atkinson)', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
     },
     text: {

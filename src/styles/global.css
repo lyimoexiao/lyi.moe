@@ -80,8 +80,13 @@ html.dark {
 }
 
 body {
+  /* Atkinson covers Latin; CJK falls through to the explicit Chinese
+     fonts (PingFang on macOS, YaHei on Windows, Noto elsewhere). */
   font-family:
     var(--font-atkinson),
+    'PingFang SC',
+    'Noto Sans SC',
+    'Microsoft YaHei',
     system-ui,
     -apple-system,
     'Segoe UI',
