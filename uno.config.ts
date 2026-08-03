@@ -61,6 +61,7 @@ export default defineConfig({
       'tap-scale': 'transition-transform active:scale-[0.96]',
 
       'z-top-nav': 'z-60',
+      'z-loading-bar': 'z-200',
     },
   ],
   presets: [

@@ -3,6 +3,7 @@ import { getRelativeLocaleUrl } from 'astro:i18n'
 import { SITE_TITLE } from '../consts'
 import { getLocale, useTranslations } from '../i18n/ui'
 import HeaderLink from './HeaderLink.astro'
+import LoadingIndicator from './LoadingIndicator.astro'
 
 const locale = getLocale(Astro.currentLocale)
 const t = useTranslations(locale)
@@ -19,6 +20,7 @@ const navLinks = [
 ---
 
 <header class="border-b border-base bg-nav top-0 sticky z-top-nav">
+	<LoadingIndicator />
 	<nav class="px-4 flex h-14 items-center justify-between sm:px-6">
 		<a
   href={getRelativeLocaleUrl(locale, '')}

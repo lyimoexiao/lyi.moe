@@ -1,0 +1,102 @@
+---
+// Fixed top progress bar shown during client-side navigation,
+// NProgress-style feedback for the view-transition router.
+// The element persists across page swaps via transition:persist.
+---
+<div id="loading-bar" class="z-loading-bar" transition:persist aria-hidden="true" />
+
+<style>
+  #loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--progress, 0%);
+    height: 2px;
+    background: var(--c-accent);
+    box-shadow: 0 0 8px var(--c-accent);
+    opacity: 0;
+    transition:
+      width 0.2s ease-out,
+      opacity 0.25s ease-out;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #loading-bar {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+// Attach once; document-level listeners survive view-transition navigation.
+if (!window.__loadingBarInit) {
+  window.__loadingBarInit = true
+
+  const threshold = 200
+  let pending
+  let trickle
+  let active = false
+  let progress = 0
+
+  const bar = () => document.getElementById('loading-bar')
+
+  function start() {
+    progress = 0
+    const el = bar()
+    if (!el)
+      return
+    el.style.setProperty('--progress', '0%')
+    el.style.opacity = '1'
+    trickle = setInterval(() => {
+      progress = Math.min(progress + (100 - progress) * 0.12 + Math.random() * 2, 90)
+      el.style.setProperty('--progress', `${progress}%`)
+    }, 180)
+  }
+
+  function complete() {
+    const el = bar()
+    if (el)
+      el.style.setProperty('--progress', '100%')
+  }
+
+  function finish() {
+    active = false
+    clearInterval(trickle)
+    const el = bar()
+    if (!el)
+      return
+    setTimeout(() => {
+      el.style.opacity = '0'
+      setTimeout(() => el.style.setProperty('--progress', '0%'), 300)
+    }, 150)
+  }
+
+  // Navigation starts: show the bar after a short threshold to avoid
+  // flashing on fast transitions.
+  document.addEventListener('astro:before-preparation', () => {
+    clearTimeout(pending)
+    clearInterval(trickle)
+    active = false
+    pending = setTimeout(() => {
+      active = true
+      start()
+    }, threshold)
+  })
+
+  // Content is ready to swap: jump to 100% so the bar reads as complete.
+  document.addEventListener('astro:before-swap', () => {
+    clearTimeout(pending)
+    if (active) {
+      clearInterval(trickle)
+      complete()
+    }
+  })
+
+  // New page is in place: fade out and reset.
+  document.addEventListener('astro:page-load', () => {
+    if (active)
+      finish()
+  })
+}
+</script>
