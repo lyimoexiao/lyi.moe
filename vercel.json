@@ -2,17 +2,34 @@
   "framework": "astro",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
-  "redirects": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "https://lyi.moe/friends",
-      "statusCode": 308,
+      "src": "^(?:/(.*))$",
+      "headers": {
+        "Location": "https://lyi.moe/blog/"
+      },
+      "status": 308,
       "has": [
         {
           "type": "host",
           "value": "blog.lyi.moe"
         }
       ]
+    },
+    { "handle": "filesystem" },
+    {
+      "src": "^/_astro/.+",
+      "status": 404,
+      "headers": {
+        "cache-control": "public, max-age=300"
+      }
+    },
+    {
+      "src": "^/bg/.+",
+      "status": 404,
+      "headers": {
+        "cache-control": "public, max-age=300"
+      }
     }
   ]
 }
