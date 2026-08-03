@@ -72,10 +72,16 @@ const bgs = {
 // Element lookups happen per call because View Transitions replace the DOM:
 // this script re-runs on every navigation, and after-swap re-picks in case
 // the incoming page's script runs before its elements are swapped in.
+// State that must survive across re-runs lives in one shared object (the
+// current pick plus a monotonic load token): the first run's listeners keep
+// firing on later pages, and without shared state a stale closure's in-flight
+// preload could finish last and paint a variant that no longer matches the
+// theme. Every async step re-validates the token, so only the newest pick —
+// and the theme variant it was made for — ever reaches the layers.
 ;(() => {
   const root = document.documentElement
   const mq = window.matchMedia('(min-width: 640px)')
-  let current = null
+  const S = window.__bgState || (window.__bgState = { current: null, loadId: 0 })
 
   function setCredit(bg) {
     const creditEl = document.getElementById('page-bg-credit')
@@ -152,13 +158,8 @@ const bgs = {
   function preload(url) {
     return new Promise((resolve) => {
       const img = new Image()
-      img.onload = () => {
-        const h = sampleHue(img)
-        if (h != null)
-          root.style.setProperty('--bg-h', `${Math.round(h)}`)
-        resolve(true)
-      }
-      img.onerror = () => resolve(false)
+      img.onload = () => resolve(img)
+      img.onerror = () => resolve(null)
       img.src = url
     })
   }
@@ -168,7 +169,7 @@ const bgs = {
     return new Promise((resolve) => setTimeout(resolve, dur))
   }
 
-  async function crossFade(url) {
+  async function crossFade(url, token) {
     const main = document.getElementById('page-bg')
     const alt = document.getElementById('page-bg-alt')
     if (!main || !alt)
@@ -176,6 +177,8 @@ const bgs = {
     alt.style.backgroundImage = `url(${url})`
     alt.classList.remove('opacity-0')
     await waitTransition(alt)
+    if (S.loadId !== token)
+      return // superseded mid-fade: alt already shows the newer image
     main.style.backgroundImage = `url(${url})`
     main.classList.remove('opacity-0')
     alt.classList.add('opacity-0')
@@ -183,32 +186,37 @@ const bgs = {
 
   async function show(bg) {
     const main = document.getElementById('page-bg')
-    const creditEl = document.getElementById('page-bg-credit')
     if (!main || !bg)
       return
     const dark = root.classList.contains('dark')
     const url = dark ? bg.dark : bg.light
     if (!url) {
-      pick()
+      pick() // current theme has no variant for this image → re-pick
       return
     }
-    const ok = await preload(url)
-    if (!ok) {
+    const token = ++S.loadId
+    const img = await preload(url)
+    // Discard loads superseded by a newer pick or variant swap: the theme may
+    // have changed while this variant was loading.
+    if (S.loadId !== token || S.current !== bg)
+      return
+    if (!img) {
       // Broken image → retry another candidate; keep the current bg if the
       // failure happened during a variant swap (current unchanged).
       pick({ skip: bg })
       return
     }
-    // Guard against stale loads after a re-pick or navigation.
-    if (current !== bg)
-      return
+    const h = sampleHue(img)
+    if (h != null)
+      root.style.setProperty('--bg-h', `${Math.round(h)}`)
     if (main.style.backgroundImage)
-      await crossFade(url)
+      await crossFade(url, token)
     else {
       main.style.backgroundImage = `url(${url})`
       main.classList.remove('opacity-0')
     }
-    setCredit(bg)
+    if (S.loadId === token)
+      setCredit(bg)
   }
 
   function pick({ skip } = {}) {
@@ -229,26 +237,29 @@ const bgs = {
       }
       if (creditEl)
         creditEl.hidden = true
-      current = null
+      S.current = null
+      S.loadId++ // also invalidate any load still in flight
       return
     }
-    current = pool[Math.floor(Math.random() * pool.length)]
-    current.dir = dir
-    show(current)
+    const bg = pool[Math.floor(Math.random() * pool.length)]
+    bg.dir = dir
+    S.current = bg
+    show(bg)
   }
 
   function onClassChange() {
-    if (!current)
+    if (!S.current)
       return
     const dark = root.classList.contains('dark')
-    if (dark ? !current.dark : !current.light)
+    if (dark ? !S.current.dark : !S.current.light)
       pick() // current theme no longer matches → re-pick
     else
-      show(current) // keep the same image, swap variant (preloads + fades in)
+      show(S.current) // keep the same image, swap variant (preloads + fades in)
   }
 
   // Register persistent listeners once; the inline script re-runs on every
-  // navigation, so a flag prevents duplicate mq/observer wiring.
+  // navigation, so a flag prevents duplicate mq/observer wiring. The handlers
+  // read/write the shared state, so they stay correct on later pages.
   if (!window.__bgInit) {
     window.__bgInit = true
     mq.addEventListener('change', pick)
