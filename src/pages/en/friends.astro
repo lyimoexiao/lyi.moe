@@ -3,7 +3,6 @@ import { Image } from 'astro:assets'
 import BaseHead from '../../components/BaseHead.astro'
 import Footer from '../../components/Footer.astro'
 import Header from '../../components/Header.astro'
-import { SITE_TITLE } from '../../consts'
 import { getLocale, useTranslations } from '../../i18n/ui'
 import { friends } from '../../lib/friends'
 
@@ -14,7 +13,7 @@ const t = useTranslations(locale)
 <!doctype html>
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={`${t('nav.friends')} - ${SITE_TITLE}`} description={t('site.description')} />
+		<BaseHead title={`${t('nav.friends')} - ${t('site.title')}`} description={t('site.description')} />
 	</head>
 	<body>
 		<Header />
@@ -41,7 +40,7 @@ const t = useTranslations(locale)
   alt=""
   width={40}
   height={40}
-  loading="lazy"
+  loading="eager"
   class="img-outline rounded-full shrink-0 h-10 w-10"
 										/>
 										<span class="flex flex-col min-w-0">
@@ -51,7 +50,7 @@ const t = useTranslations(locale)
   alt=""
   width={14}
   height={14}
-  loading="lazy"
+  loading="eager"
   class="rounded-sm op-60 shrink-0 h-3.5 w-3.5"
 												/>
 												<span class="truncate">{friend.author}</span>

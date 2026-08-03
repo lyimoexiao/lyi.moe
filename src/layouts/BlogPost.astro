@@ -17,7 +17,7 @@ const t = useTranslations(locale)
 
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={title} description={description} image={heroImage} />
+		<BaseHead title={`${title} - ${t('site.title')}`} description={description} image={heroImage} />
 	</head>
 	<body>
 		<Header />
@@ -25,13 +25,14 @@ const t = useTranslations(locale)
 			<article class="mx-auto max-w-3xl">
 				{
 					heroImage && (
-						<Image
+					<Image
   src={heroImage}
   alt=""
   width={1020}
   height={510}
+  loading="eager"
   class="img-outline rounded-lg"
-						/>
+					/>
 					)
 				}
 				<header class="mt-8 max-w-[65ch]">
@@ -39,7 +40,7 @@ const t = useTranslations(locale)
 						<span class="i-ph-arrow-left" />
 						{t('blog.back')}
 					</a>
-					<div class="text-mini font-mono mt-6 op-mute flex gap-2 items-center tabular-nums">
+					<div class="text-mini font-mono mt-6 color-c-text-2 flex gap-2 items-center tabular-nums">
 						<FormattedDate date={pubDate} />
 						{
 							updatedDate && (
@@ -116,6 +117,17 @@ document.addEventListener('astro:page-load', () => {
       }, 1500)
     })
     pre.appendChild(btn)
+  }
+  for (const a of document.querySelectorAll('.prose a[href^="http"]')) {
+    if (a.dataset.external)
+      continue
+    a.dataset.external = 'true'
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    const icon = document.createElement('span')
+    icon.className = 'i-ph-arrow-up-right'
+    icon.setAttribute('aria-hidden', 'true')
+    a.append(icon)
   }
 })
 </script>

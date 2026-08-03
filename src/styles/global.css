@@ -64,6 +64,10 @@ html.dark {
   html {
     transition: none;
   }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
 html {
@@ -75,6 +79,14 @@ html {
   transition:
     background-color 0.3s,
     color 0.3s;
+}
+
+.bg-tinted {
+  color: hsl(var(--bg-h, var(--hue)) 22% 13%);
+  transition: color 0.3s;
+}
+html.dark .bg-tinted {
+  color: hsl(var(--bg-h, var(--hue)) 15% 92%);
 }
 
 html.dark {
@@ -98,15 +110,12 @@ body {
   font-size: 1rem;
   line-height: 1.75;
   text-wrap: pretty;
-  /* Fill the viewport so the footer sits at the bottom on short pages. */
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
 }
 
+/* Push the footer past the viewport: the content fills the screen minus
+   the fixed header height, so the footer only shows on scroll. */
 main {
-  flex: 1;
+  min-height: calc(100dvh - 3.5rem);
 }
 
 h1,
@@ -171,6 +180,18 @@ h4 {
 
 .prose a:hover {
   opacity: 0.75;
+}
+
+/* External links (absolute http(s) hrefs) get a presetIcons arrow span
+   injected by the post layout script. presetIcons does not set display,
+   so it must be inline-block here or width is ignored inside the link. */
+.prose a[href^='http'] .i-ph-arrow-up-right {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-inline-start: 0.15em;
+  vertical-align: -0.125em;
+  text-decoration: none;
 }
 
 .prose strong {

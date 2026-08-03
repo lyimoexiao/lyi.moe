@@ -1,0 +1,262 @@
+---
+// Random home-page background. Images live in /public/bg:
+//   mobile/  – portrait-oriented backgrounds for screens < sm (640px)
+//   desktop/ – landscape-oriented backgrounds for screens >= sm
+// Naming rules (source credits go in src/bg-credits.json, keyed by file):
+//   foo.jpg           – used in both themes
+//   foo.jpg + foo_dark.jpg – light/dark pair
+//   foo_light.jpg     – light theme only
+//   foo_dark.jpg      – dark theme only
+import fs from 'node:fs'
+import credits from '../bg-credits.json'
+
+const IMG_EXT = /\.(avif|jpe?g|png|webp)$/i
+
+function listBgs(dir: string) {
+  const files = fs.readdirSync(`public/bg/${dir}`).filter(f => IMG_EXT.test(f))
+  // Group by base name, tracking which variant each file provides.
+  const byBase = new Map<string, { plain?: string; light?: string; dark?: string }>()
+  for (const f of files) {
+    const key = f.replace(/(_light|_dark)?\.\w+$/, '')
+    const group = byBase.get(key) ?? {}
+    if (/\.\w+$/.test(f) && !/_light|_dark/.test(f))
+      group.plain = f
+    else if (f.includes('_light'))
+      group.light = f
+    else if (f.includes('_dark'))
+      group.dark = f
+    byBase.set(key, group)
+  }
+  return [...byBase.entries()].flatMap(([base, g]) => {
+    // plain exists → default for light, falls back to plain for dark.
+    if (g.plain) {
+      return [{ light: g.plain, dark: g.dark || g.plain }]
+    }
+    // No plain: only list themes that actually have a variant.
+    const entries = []
+    if (g.light)
+      entries.push({ light: g.light, dark: g.dark || null })
+    else if (g.dark)
+      entries.push({ light: null, dark: g.dark })
+    return entries
+  }).map(e => ({
+    light: e.light ? `/bg/${dir}/${e.light}` : null,
+    dark: e.dark ? `/bg/${dir}/${e.dark}` : null,
+    lightFile: e.light,
+    darkFile: e.dark,
+  }))
+}
+
+const bgs = {
+  mobile: listBgs('mobile'),
+  desktop: listBgs('desktop'),
+}
+---
+
+<div id="page-bg" class="fixed inset-0 -z-1 bg-cover bg-center opacity-0 transition-[opacity] duration-500" aria-hidden="true">
+	<div class="absolute inset-0" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
+</div>
+<div id="page-bg-alt" class="fixed inset-0 -z-1 bg-cover bg-center opacity-0 transition-[opacity] duration-500" aria-hidden="true">
+	<div class="absolute inset-0" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
+</div>
+<div id="page-bg-credit" class="fixed right-3 bottom-3 z-1 text-xs op-70" hidden></div>
+
+<script is:inline define:vars={{ bgs, credits }}>
+// Picks one background per visit, matching the layout breakpoint (sm).
+// The image is preloaded (via Image) before it is shown: the layer fades in
+// only on success, the credit appears only after the image actually loads,
+// and a broken image falls back to the next candidate (or the plain site
+// background when none load).
+// Theme switches keep the same image and swap to its `_dark` variant;
+// single-theme images re-pick when the current theme doesn't match.
+// Element lookups happen per call because View Transitions replace the DOM:
+// this script re-runs on every navigation, and after-swap re-picks in case
+// the incoming page's script runs before its elements are swapped in.
+;(() => {
+  const root = document.documentElement
+  const mq = window.matchMedia('(min-width: 640px)')
+  let current = null
+
+  function setCredit(bg) {
+    const creditEl = document.getElementById('page-bg-credit')
+    if (!creditEl)
+      return
+    const file = root.classList.contains('dark') ? bg.darkFile : bg.lightFile
+    const credit = file && credits[bg.dir]?.[file]
+    if (!credit) {
+      creditEl.hidden = true
+      return
+    }
+    creditEl.hidden = false
+    creditEl.innerHTML = ''
+    const a = document.createElement('a')
+    a.href = credit.link
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.className = 'op-fade hover:op100 transition-opacity'
+    a.textContent = credit.author
+    creditEl.appendChild(a)
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255
+    g /= 255
+    b /= 255
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    if (max === min)
+      return [0, 0, (max + min) / 2]
+    const d = max - min
+    const s = (max + min) / 2 > 0.5 ? d / (2 - max - min) : d / (max + min)
+    let h
+    if (max === r)
+      h = (g - b) / d + (g < b ? 6 : 0)
+    else if (max === g)
+      h = (b - r) / d + 2
+    else
+      h = (r - g) / d + 4
+    return [h * 60, s, (max + min) / 2]
+  }
+
+  function sampleHue(img) {
+    try {
+      const c = document.createElement('canvas')
+      c.width = 16
+      c.height = 16
+      const ctx = c.getContext('2d')
+      if (!ctx)
+        return null
+      ctx.drawImage(img, 0, 0, 16, 16)
+      const { data } = ctx.getImageData(0, 0, 16, 16)
+      let r = 0
+      let g = 0
+      let b = 0
+      let n = 0
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128)
+          continue
+        r += data[i]
+        g += data[i + 1]
+        b += data[i + 2]
+        n++
+      }
+      if (!n)
+        return null
+      return rgbToHsl(r / n, g / n, b / n)[0]
+    }
+    catch {
+      return null
+    }
+  }
+
+  function preload(url) {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const h = sampleHue(img)
+        if (h != null)
+          root.style.setProperty('--bg-h', `${Math.round(h)}`)
+        resolve(true)
+      }
+      img.onerror = () => resolve(false)
+      img.src = url
+    })
+  }
+
+  function waitTransition(el) {
+    const dur = parseFloat(getComputedStyle(el).transitionDuration) * 1000 || 0
+    return new Promise((resolve) => setTimeout(resolve, dur))
+  }
+
+  async function crossFade(url) {
+    const main = document.getElementById('page-bg')
+    const alt = document.getElementById('page-bg-alt')
+    if (!main || !alt)
+      return
+    alt.style.backgroundImage = `url(${url})`
+    alt.classList.remove('opacity-0')
+    await waitTransition(alt)
+    main.style.backgroundImage = `url(${url})`
+    main.classList.remove('opacity-0')
+    alt.classList.add('opacity-0')
+  }
+
+  async function show(bg) {
+    const main = document.getElementById('page-bg')
+    const creditEl = document.getElementById('page-bg-credit')
+    if (!main || !bg)
+      return
+    const dark = root.classList.contains('dark')
+    const url = dark ? bg.dark : bg.light
+    if (!url) {
+      pick()
+      return
+    }
+    const ok = await preload(url)
+    if (!ok) {
+      // Broken image → retry another candidate; keep the current bg if the
+      // failure happened during a variant swap (current unchanged).
+      pick({ skip: bg })
+      return
+    }
+    // Guard against stale loads after a re-pick or navigation.
+    if (current !== bg)
+      return
+    if (main.style.backgroundImage)
+      await crossFade(url)
+    else {
+      main.style.backgroundImage = `url(${url})`
+      main.classList.remove('opacity-0')
+    }
+    setCredit(bg)
+  }
+
+  function pick({ skip } = {}) {
+    const el = document.getElementById('page-bg')
+    const creditEl = document.getElementById('page-bg-credit')
+    const dir = mq.matches ? 'desktop' : 'mobile'
+    const dark = root.classList.contains('dark')
+    const pool = bgs[dir].filter(bg => bg !== skip && (dark ? bg.dark : bg.light))
+    if (!el || !creditEl || !pool.length) {
+      if (el) {
+        el.style.backgroundImage = ''
+        el.classList.add('opacity-0')
+      }
+      const alt = document.getElementById('page-bg-alt')
+      if (alt) {
+        alt.style.backgroundImage = ''
+        alt.classList.add('opacity-0')
+      }
+      if (creditEl)
+        creditEl.hidden = true
+      current = null
+      return
+    }
+    current = pool[Math.floor(Math.random() * pool.length)]
+    current.dir = dir
+    show(current)
+  }
+
+  function onClassChange() {
+    if (!current)
+      return
+    const dark = root.classList.contains('dark')
+    if (dark ? !current.dark : !current.light)
+      pick() // current theme no longer matches → re-pick
+    else
+      show(current) // keep the same image, swap variant (preloads + fades in)
+  }
+
+  // Register persistent listeners once; the inline script re-runs on every
+  // navigation, so a flag prevents duplicate mq/observer wiring.
+  if (!window.__bgInit) {
+    window.__bgInit = true
+    mq.addEventListener('change', pick)
+    new MutationObserver(onClassChange).observe(root, { attributes: true, attributeFilter: ['class'] })
+    // Re-pick after client-side navigation swaps the page in.
+    document.addEventListener('astro:after-swap', pick)
+  }
+
+  pick()
+})()
+</script>

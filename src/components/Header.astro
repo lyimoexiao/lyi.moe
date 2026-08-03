@@ -1,6 +1,7 @@
 ---
+import { Image } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
-import { SITE_TITLE } from '../consts'
+import avatar from '../assets/avatar.jpg'
 import { getLocale, useTranslations } from '../i18n/ui'
 import HeaderLink from './HeaderLink.astro'
 import LoadingIndicator from './LoadingIndicator.astro'
@@ -11,6 +12,8 @@ const otherLang = locale === 'en' ? 'zh-cn' : 'en'
 const rawPath = Astro.url.pathname
 const noPrefix = rawPath.startsWith('/en') ? (rawPath.slice(3) || '/') : rawPath
 const otherHref = otherLang === 'en' ? (noPrefix === '/' ? '/en' : `/en${noPrefix}`) : noPrefix
+const isHome = noPrefix === '/'
+const homeHref = getRelativeLocaleUrl(locale, '')
 const navLinks = [
   { href: getRelativeLocaleUrl(locale, ''), label: t('nav.home') },
   { href: getRelativeLocaleUrl(locale, 'blog'), label: t('nav.blog') },
@@ -19,22 +22,40 @@ const navLinks = [
 ]
 ---
 
-<header class="border-b border-base bg-nav top-0 sticky z-top-nav">
+<header class="top-0 sticky z-top-nav">
+	<div
+  id="header-bg"
+  transition:persist
+  aria-hidden="true"
+  class:list={['absolute inset-0 -z-1 border-b transition-[background-color,border-color] duration-300', isHome ? 'bg-transparent border-transparent' : 'bg-nav border-base']}
+	/>
 	<LoadingIndicator />
-	<nav class="px-4 flex h-14 items-center justify-between sm:px-6">
-		<a
-  href={getRelativeLocaleUrl(locale, '')}
-  class="tracking-tight font-700 transition-opacity hover:op80"
-  title={SITE_TITLE}
-		>
-			{SITE_TITLE}
-		</a>
-		<div class="flex gap-1 items-center">
-			{
-				navLinks.map(link => (
-					<HeaderLink href={link.href}>{link.label}</HeaderLink>
-				))
-			}
+	<nav class="px-4 flex h-14 items-center sm:px-6">
+		{!isHome && (
+			<a
+  href={homeHref}
+  class="tracking-tight font-700 flex items-center gap-2 transition-opacity hover:op80"
+  title={t('site.title')}
+			>
+				<Image
+  src={avatar}
+  alt=""
+  width={28}
+  height={28}
+  loading="eager"
+  class="img-outline rounded-full h-7 w-7"
+				/>
+				{t('site.title')}
+			</a>
+		)}
+		<div class:list={['flex gap-1 items-center ml-auto px-1.5', isHome && 'bg-nav rounded-full']}>
+			<div class="hidden gap-1 items-center sm:flex">
+				{
+					navLinks.map(link => (
+						<HeaderLink href={link.href}>{link.label}</HeaderLink>
+					))
+				}
+			</div>
 			<a
   href={otherHref}
   class="nav-link font-medium"
@@ -53,12 +74,41 @@ const navLinks = [
 				<span class="i-ph-sun text-lg m-auto transition-[opacity,transform,filter] duration-300 inset-0 absolute dark:op-0 dark:scale-50 dark:blur-sm" />
 				<span class="i-ph-moon text-lg m-auto op-0 scale-50 transition-[opacity,transform,filter] duration-300 inset-0 absolute blur-sm dark:op-100 dark:scale-100 dark:blur-0" />
 			</button>
+			<details class="relative sm:hidden">
+				<summary
+  class="btn-header h-10 w-10 cursor-pointer list-none [&::-webkit-details-marker]:hidden [&::marker]:content-none"
+  aria-label={t('nav.menu')}
+  title={t('nav.menu')}
+				>
+					<span class="i-ph-list text-lg m-auto" />
+				</summary>
+				<nav class="absolute right-0 top-full mt-2 w-40 rounded-lg border border-base bg-nav p-1 shadow-lg">
+					{
+						navLinks.map(link => (
+							<HeaderLink href={link.href} class="block px-3 py-2">{link.label}</HeaderLink>
+						))
+					}
+				</nav>
+			</details>
 		</div>
 	</nav>
 </header>
 
 <script>
 const root = document.documentElement
+const isHomePath = () => (location.pathname.replace(/^\/en/, '') || '/') === '/'
+
+// The background layer survives navigation via transition:persist; flip its
+// classes so the color/border cross-fades only when the home state changes.
+document.addEventListener('astro:page-load', () => {
+  const bg = document.getElementById('header-bg')
+  if (!bg)
+    return
+  bg.classList.toggle('bg-nav', !isHomePath())
+  bg.classList.toggle('border-base', !isHomePath())
+  bg.classList.toggle('bg-transparent', isHomePath())
+  bg.classList.toggle('border-transparent', isHomePath())
+})
 
 // Event delegation so the handler survives client-side navigation,
 // which replaces the button element on every page swap.

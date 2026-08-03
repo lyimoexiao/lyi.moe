@@ -1,0 +1,68 @@
+---
+import { quotes } from '../quotes'
+const first = quotes[0] ?? ''
+---
+
+<p id="type-quote" class="mt-2 op-fade max-w-[65ch] text-pretty cursor-pointer">
+	<span id="type-quote-text">{first}</span><span class="type-cursor" aria-hidden="true"></span>
+</p>
+
+<style>
+.type-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: type-blink 1s steps(2, start) infinite;
+}
+@keyframes type-blink {
+  to {
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .type-cursor {
+    animation: none;
+  }
+}
+</style>
+
+<script is:inline define:vars={{ quotes }}>
+const isHome = () => (location.pathname.replace(/^\/en/, '') || '/') === '/'
+let timer = null
+function type(text) {
+  clearInterval(timer)
+  const span = document.getElementById('type-quote-text')
+  if (!span)
+    return
+  span.textContent = ''
+  let i = 0
+  timer = setInterval(() => {
+    span.textContent = text.slice(0, ++i)
+    if (i >= text.length)
+      clearInterval(timer)
+  }, 60)
+}
+function pick(exclude) {
+  if (quotes.length === 1)
+    return quotes[0]
+  let q = quotes[Math.floor(Math.random() * quotes.length)]
+  while (q === exclude)
+    q = quotes[Math.floor(Math.random() * quotes.length)]
+  return q
+}
+document.addEventListener('click', (event) => {
+  const target = event.target
+  if (target instanceof Element && target.closest('#type-quote')) {
+    const current = document.getElementById('type-quote-text')?.textContent ?? ''
+    type(pick(current))
+  }
+})
+document.addEventListener('astro:page-load', () => {
+  if (!isHome() || !quotes.length)
+    return
+  type(pick())
+})
+</script>

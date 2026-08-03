@@ -9,7 +9,7 @@ import {
 export default defineConfig({
   // Icon classes referenced from scripts (copy button) are not visible to
   // the scanner, which only sees rendered template output.
-  safelist: ['i-ph-copy', 'i-ph-check'],
+  safelist: ['i-ph-copy', 'i-ph-check', 'i-ph-arrow-up-right'],
   theme: {
     font: {
       sans: ['var(--font-atkinson)', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
