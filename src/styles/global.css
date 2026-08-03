@@ -1,141 +1,340 @@
 /*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+  Global theme. One neutral hue drives every surface and text color via
+  HSL, plus an accent hue for links and highlights. Dark values are swapped
+  in html.dark, so components reference --c-* variables instead of
+  hardcoded colors.
+*/
 
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+  --hue: 220;
+  --sat: 14%;
+  --accent-hue: 201;
+
+  /* Surfaces */
+  --c-bg: hsl(var(--hue) var(--sat) 99%);
+  --c-bg-2: hsl(var(--hue) var(--sat) 95%);
+  --c-bg-3: hsl(var(--hue) var(--sat) 91%);
+  --c-nav: hsl(var(--hue) var(--sat) 99% / 80%);
+
+  /* Text */
+  --c-text-1: hsl(var(--hue) 22% 13%);
+  --c-text-2: hsl(var(--hue) 14% 38%);
+  --c-text-3: hsl(var(--hue) 12% 52%);
+
+  /* Borders */
+  --c-border: hsl(var(--hue) var(--sat) 88%);
+
+  /* Accent */
+  --c-accent: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-text: hsl(var(--accent-hue) 82% 42%);
+  --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 6%);
 }
+
+html.dark {
+  --c-bg: hsl(var(--hue) 12% 7%);
+  --c-bg-2: hsl(var(--hue) 12% 11%);
+  --c-bg-3: hsl(var(--hue) 12% 15%);
+  --c-nav: hsl(var(--hue) 12% 7% / 80%);
+
+  --c-text-1: hsl(var(--hue) 15% 92%);
+  --c-text-2: hsl(var(--hue) 10% 68%);
+  --c-text-3: hsl(var(--hue) 8% 46%);
+
+  --c-border: hsl(var(--hue) 10% 17%);
+
+  --c-accent: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-text: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 8%);
+}
+
+/* Fallback when JS is disabled: follow the OS preference. */
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    color-scheme: dark;
+    background-color: hsl(var(--hue) 12% 7%);
+    color: hsl(var(--hue) 15% 92%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition: none;
+  }
+}
+
+html {
+  color-scheme: light;
+  background-color: var(--c-bg);
+  color: var(--c-text-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+html.dark {
+  color-scheme: dark;
+  background-color: var(--c-bg);
+  color: var(--c-text-1);
+}
+
 body {
-	font-family: var(--font-atkinson);
-	margin: 0;
-	padding: 0;
-	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
+  font-family:
+    var(--font-atkinson),
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+  /* Fill the viewport so the footer sits at the bottom on short pages. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
+
 main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+  flex: 1;
 }
+
 h1,
 h2,
 h3,
-h4,
-h5,
-h6 {
-	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
-	line-height: 1.2;
-}
-h1 {
-	font-size: 3.052em;
-}
-h2 {
-	font-size: 2.441em;
-}
-h3 {
-	font-size: 1.953em;
-}
 h4 {
-	font-size: 1.563em;
-}
-h5 {
-	font-size: 1.25em;
-}
-strong,
-b {
-	font-weight: 700;
-}
-a {
-	color: var(--accent);
-}
-a:hover {
-	color: var(--accent);
-}
-p {
-	margin-bottom: 1em;
-}
-.prose p {
-	margin-bottom: 2em;
-}
-textarea {
-	width: 100%;
-	font-size: 16px;
-}
-input {
-	font-size: 16px;
-}
-table {
-	width: 100%;
-}
-img {
-	max-width: 100%;
-	height: auto;
-	border-radius: 8px;
-}
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-}
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-pre > code {
-	all: unset;
-}
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
-}
-hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
-}
-@media (max-width: 720px) {
-	body {
-		font-size: 18px;
-	}
-	main {
-		padding: 1em;
-	}
+  text-wrap: balance;
 }
 
-.sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
-	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
-	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
-	white-space: nowrap;
+::selection {
+  background: var(--c-accent-soft);
+}
+
+/* ---------- Prose: rendered Markdown / MDX content ---------- */
+
+.prose {
+  max-width: 65ch;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.prose > *:first-child {
+  margin-top: 0;
+}
+
+.prose > *:last-child {
+  margin-bottom: 0;
+}
+
+.prose h1,
+.prose h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2.5em 0 0.75em;
+}
+
+.prose h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 2em 0 0.6em;
+}
+
+.prose h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 1.75em 0 0.5em;
+}
+
+.prose p {
+  margin: 0 0 1.25em;
+}
+
+.prose a {
+  color: var(--c-accent-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--c-accent-text) 35%, transparent);
+  transition: opacity 0.2s;
+}
+
+.prose a:hover {
+  opacity: 0.75;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.375em;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin: 0.25em 0;
+  padding-left: 0.25em;
+}
+
+.prose li::marker {
+  color: var(--c-accent-text);
+}
+
+.prose blockquote {
+  margin: 1.5em 0;
+  padding: 0.75em 1.25em;
+  border-left: 3px solid color-mix(in srgb, var(--c-accent-text) 50%, transparent);
+  border-radius: 0 8px 8px 0;
+  background-color: var(--c-accent-soft);
+  color: var(--c-text-2);
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  background: var(--c-bg-3);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+}
+
+/* Code blocks: shiki dual themes, compact type, pinned line numbers. */
+.prose pre {
+  --code-gutter: 3.5em;
+  position: relative;
+  contain: paint;
+  margin: 1.5em 0;
+  padding: 1rem;
+  padding-inline-start: var(--code-gutter);
+  background-color: var(--c-bg-2);
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.5;
+  tab-size: 2;
+  counter-reset: line;
+}
+
+/* Override shiki's inline background and base color so the block matches
+   the theme. Token colors keep their inline light values, and switch to
+   the dark variants when the site theme class is active. */
+.prose pre.astro-code {
+  background-color: var(--c-bg-2) !important;
+  color: var(--c-text-1) !important;
+}
+
+html.dark .prose pre.astro-code,
+html.dark .prose pre.astro-code span {
+  color: var(--shiki-dark, var(--c-text-1)) !important;
+}
+
+.prose pre.astro-code .line {
+  counter-increment: line;
+}
+
+.prose pre.astro-code .line::before {
+  content: counter(line);
+  position: fixed;
+  inset-inline-start: 0;
+  width: var(--code-gutter);
+  padding-inline-end: 1em;
+  text-align: end;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background-color: var(--c-bg-2);
+  color: var(--c-text-3);
+  z-index: 1;
+}
+
+/* Language badge, shown in the top right corner of the code block. */
+.prose pre.astro-code::after {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.4rem;
+  right: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-text-3);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 1em;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  outline: 1px solid hsl(0 0% 0% / 10%);
+  outline-offset: -1px;
+}
+
+html.dark .prose img {
+  outline-color: hsl(0 0% 100% / 10%);
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--c-border);
+  margin: 2.5em 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.25em;
+  font-size: 0.9375rem;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--c-border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose th {
+  font-weight: 700;
+}
+
+/* Copy button injected by the post layout script. */
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  padding: 0.2em 0.6em;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--c-bg) 75%, transparent);
+  color: var(--c-text-1);
+  font-family: inherit;
+  font-size: 0.75rem;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.prose pre:hover .copy-btn,
+.copy-btn:focus-visible {
+  opacity: 1;
 }

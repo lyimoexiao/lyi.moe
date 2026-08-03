@@ -1,0 +1,70 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n'
+import BaseHead from '../../../components/BaseHead.astro'
+import Footer from '../../../components/Footer.astro'
+import FormattedDate from '../../../components/FormattedDate.astro'
+import Header from '../../../components/Header.astro'
+import { SITE_TITLE } from '../../../consts'
+import { getLocale, useTranslations } from '../../../i18n/ui'
+import { getPosts } from '../../../lib/posts'
+
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const prefix = `${locale}/`
+const posts = await getPosts(locale)
+---
+
+<!doctype html>
+<html lang={locale === 'en' ? 'en' : 'zh-CN'}>
+	<head>
+		<BaseHead title={`${t('blog.title')} - ${SITE_TITLE}`} description={t('site.description')} />
+	</head>
+	<body>
+		<Header />
+		<main class="px-4 py-16 sm:px-6">
+			<div class="mx-auto max-w-3xl">
+				<div class="flex items-center justify-between">
+					<h1 class="text-3xl tracking-tight font-700 text-balance">{t('blog.title')}</h1>
+					<a
+  href={getRelativeLocaleUrl(locale, 'rss.xml').replace(/\/$/, '')}
+  class="btn-icon tap-scale"
+  aria-label={t('rss.feed')}
+  title={t('rss.feed')}
+					>
+						<span class="i-ph-rss" />
+					</a>
+				</div>
+				<hr class="my-10 border-base" />
+				{
+					posts.length === 0
+? (
+						<p class="op-fade">{t('blog.empty')}</p>
+					)
+: (
+						<ul class="flex flex-col">
+							{
+								posts.map(post => (
+									<li>
+										<a
+  href={getRelativeLocaleUrl(locale, `blog/${post.id.slice(prefix.length)}`)}
+  class="group px-2 py-2 rounded flex gap-4 items-baseline justify-between -mx-2"
+										>
+											<span class="flex gap-1 items-center">
+												<span class="transition-colors group-hover:color-active">
+													{post.data.title}
+												</span>
+												<span class="i-ph-arrow-up-right text-sm opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
+											</span>
+											<FormattedDate date={post.data.pubDate} />
+										</a>
+									</li>
+								))
+							}
+						</ul>
+					)
+				}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

@@ -9,7 +9,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
@@ -17,5 +20,18 @@
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.6",
     "sharp": "^0.35.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.2.0",
+    "@astrojs/check": "^0.9.10",
+    "@iconify-json/fa6-brands": "^1.2.6",
+    "@iconify-json/ph": "^1.2.2",
+    "@unocss/astro": "^66.7.5",
+    "@unocss/eslint-plugin": "^66.7.5",
+    "eslint": "^10.8.0",
+    "eslint-plugin-astro": "^3.0.1",
+    "eslint-plugin-format": "^2.0.1",
+    "typescript": "^6.0.3",
+    "unocss": "^66.7.5"
   }
 }

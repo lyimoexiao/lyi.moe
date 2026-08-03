@@ -1,48 +1,72 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { Image } from 'astro:assets'
+import { getRelativeLocaleUrl } from 'astro:i18n'
+import avatar from '../assets/avatar.jpg'
+import BaseHead from '../components/BaseHead.astro'
+import Footer from '../components/Footer.astro'
+import FormattedDate from '../components/FormattedDate.astro'
+import Header from '../components/Header.astro'
+import { SITE_TITLE } from '../consts'
+import { getLocale, useTranslations } from '../i18n/ui'
+import { getPosts } from '../lib/posts'
+
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const prefix = `${locale}/`
+const posts = (await getPosts(locale)).slice(0, 5)
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={SITE_TITLE} description={t('site.description')} />
 	</head>
 	<body>
 		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+		<main class="px-4 py-16 sm:px-6">
+			<div class="mx-auto max-w-3xl">
+				<Image
+  src={avatar}
+  alt="Lyi."
+  width={160}
+  height={160}
+  class="img-outline rounded-full h-20 w-20"
+				/>
+				<h1 class="text-3xl tracking-tight font-700 mt-6 text-balance">{SITE_TITLE}</h1>
+				<p class="mt-2 op-fade max-w-[65ch] text-pretty">{t('site.description')}</p>
+				<hr class="my-10 border-base" />
+				<section>
+					<h2 class="text-lg font-600 mb-6">{t('home.latest')}</h2>
+					{
+						posts.length === 0
+? (
+							<p class="op-fade">{t('home.empty')}</p>
+						)
+: (
+							<ul class="flex flex-col">
+								{
+									posts.map(post => (
+										<li>
+											<a
+  href={getRelativeLocaleUrl(locale, `blog/${post.id.slice(prefix.length)}`)}
+  class="group px-2 py-2 rounded flex gap-4 items-baseline justify-between -mx-2"
+											>
+												<span class="flex gap-1 items-center">
+													<span class="transition-colors group-hover:color-active">
+														{post.data.title}
+													</span>
+													<span class="i-ph-arrow-up-right text-sm opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
+												</span>
+												<FormattedDate date={post.data.pubDate} />
+											</a>
+										</li>
+									))
+								}
+							</ul>
+						)
+					}
+				</section>
+			</div>
 		</main>
 		<Footer />
 	</body>

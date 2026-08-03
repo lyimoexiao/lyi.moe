@@ -1,0 +1,84 @@
+---
+import BaseHead from '../../components/BaseHead.astro'
+import Footer from '../../components/Footer.astro'
+import Header from '../../components/Header.astro'
+import { SITE_TITLE } from '../../consts'
+import { getLocale, useTranslations } from '../../i18n/ui'
+import { friends } from '../../lib/friends'
+
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+---
+
+<!doctype html>
+<html lang={locale === 'en' ? 'en' : 'zh-CN'}>
+	<head>
+		<BaseHead title={`${t('nav.friends')} - ${SITE_TITLE}`} description={t('site.description')} />
+	</head>
+	<body>
+		<Header />
+		<main class="px-4 py-16 sm:px-6">
+			<div class="mx-auto max-w-3xl">
+				<h1 class="text-3xl tracking-tight font-700 text-balance">{t('nav.friends')}</h1>
+				<hr class="my-8 border-base" />
+				<ul class="gap-3 grid sm:grid-cols-2">
+					{
+						friends.map(friend => (
+							<li class="relative">
+								<a
+  href={friend.link}
+  target="_blank"
+  rel="noopener noreferrer"
+  class:list={[
+    'group p-4 border border-base rounded-lg block transition-colors hover:border-active hover:bg-active',
+    friend.feed && 'pr-12',
+  ]}
+								>
+									<span class="flex gap-3 items-center">
+										<img
+  src={friend.avatar}
+  alt=""
+  width={40}
+  height={40}
+  loading="lazy"
+  class="img-outline rounded-full shrink-0 h-10 w-10"
+										/>
+										<span class="flex flex-col min-w-0">
+											<span class="font-600 flex gap-1.5 items-center">
+												<img
+  src={friend.icon}
+  alt=""
+  width={14}
+  height={14}
+  loading="lazy"
+  class="rounded-sm op-60 shrink-0 h-3.5 w-3.5"
+												/>
+												<span class="truncate">{friend.author}</span>
+											</span>
+											<span class="text-sm op-fade truncate">{friend.desc}</span>
+										</span>
+									</span>
+								</a>
+																{
+									friend.feed && (
+										<a
+  href={friend.feed}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="rounded op-fade inline-flex h-8 w-8 tap-scale transition-opacity items-center right-3 top-3 justify-center absolute hover:bg-active hover:op100"
+  aria-label={t('rss.feed')}
+  title={t('rss.feed')}
+										>
+											<span class="i-ph-rss" />
+										</a>
+									)
+								}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

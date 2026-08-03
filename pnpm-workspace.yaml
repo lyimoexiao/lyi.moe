@@ -1,3 +1,9 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - chokidar
+
 allowBuilds:
   esbuild: true
   sharp: true
