@@ -24,7 +24,7 @@ export const ui = {
     'about.body': '这里是关于页面，内容即将上线。',
     'rss.feed': 'RSS 订阅',
     'post.license': '本文采用 CC BY-NC-SA 4.0 许可协议',
-    'footer.github': 'GitHub 主页',
+    'footer.github': 'GitHub',
   },
   'en': {
     'nav.home': 'Home',
@@ -44,7 +44,7 @@ export const ui = {
     'about.body': 'This is the about page. Content coming soon.',
     'rss.feed': 'RSS feed',
     'post.license': 'This article is licensed under CC BY-NC-SA 4.0',
-    'footer.github': 'GitHub profile',
+    'footer.github': 'GitHub',
   },
 } as const
 

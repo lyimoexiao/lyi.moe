@@ -90,7 +90,12 @@ document.addEventListener('astro:page-load', () => {
     const btn = document.createElement('button')
     btn.type = 'button'
     btn.className = 'copy-btn'
-    btn.textContent = copy
+    const icon = document.createElement('span')
+    icon.className = 'i-ph-copy copy-icon'
+    const label = document.createElement('span')
+    label.className = 'copy-label'
+    label.textContent = copy
+    btn.append(icon, label)
     btn.addEventListener('click', async () => {
       const code = pre.querySelector('code')
       if (!code)
@@ -101,9 +106,13 @@ document.addEventListener('astro:page-load', () => {
       catch {
         // Clipboard unavailable; nothing to do.
       }
-      btn.textContent = copied
+      btn.classList.add('copied')
+      icon.classList.replace('i-ph-copy', 'i-ph-check')
+      label.textContent = copied
       setTimeout(() => {
-        btn.textContent = copy
+        btn.classList.remove('copied')
+        icon.classList.replace('i-ph-check', 'i-ph-copy')
+        label.textContent = copy
       }, 1500)
     })
     pre.appendChild(btn)

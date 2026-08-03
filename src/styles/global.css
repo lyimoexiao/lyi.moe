@@ -28,6 +28,8 @@
   --c-accent: hsl(var(--accent-hue) 100% 70%);
   --c-accent-text: hsl(var(--accent-hue) 82% 42%);
   --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 6%);
+
+  --c-ok: hsl(145 55% 32%);
 }
 
 html.dark {
@@ -45,6 +47,8 @@ html.dark {
   --c-accent: hsl(var(--accent-hue) 100% 70%);
   --c-accent-text: hsl(var(--accent-hue) 100% 70%);
   --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 8%);
+
+  --c-ok: hsl(145 60% 62%);
 }
 
 /* Fallback when JS is disabled: follow the OS preference. */
@@ -327,6 +331,9 @@ html.dark .prose img {
   top: 0.5rem;
   right: 0.5rem;
   z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
   padding: 0.2em 0.6em;
   border: 1px solid var(--c-border);
   border-radius: 6px;
@@ -336,7 +343,17 @@ html.dark .prose img {
   font-size: 0.75rem;
   opacity: 0;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition:
+    opacity 0.2s,
+    border-color 0.2s,
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.copy-btn.copied {
+  border-color: color-mix(in srgb, var(--c-ok) 45%, transparent);
+  background-color: color-mix(in srgb, var(--c-ok) 14%, transparent);
+  color: var(--c-ok);
 }
 
 .prose pre:hover .copy-btn,
