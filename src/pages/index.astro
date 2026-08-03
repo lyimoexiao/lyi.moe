@@ -35,7 +35,7 @@ const posts = (await getPosts(locale)).slice(0, 3)
   loading="eager"
   class="img-outline rounded-full h-20 w-20"
 		/>
-				<h1 class="text-3xl tracking-tight font-700 mt-6 text-balance">{t('site.title')}</h1>
+				<h1 class="font-title text-3xl tracking-tight font-300 mt-6 text-balance">{t('site.title')}</h1>
 				<TypeQuote />
 				{
 					posts.length > 0 && (

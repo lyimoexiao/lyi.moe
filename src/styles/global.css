@@ -5,6 +5,63 @@
   hardcoded colors.
 */
 
+/*
+  Alimama FangYuanTi VF (阿里妈妈方圆体) — variable font for the home
+  title and nav links. Subset into latin + cjk slices by
+  scripts/subset-alimama-font.sh (license: public/fonts/alimama-fangyuanti/LICENSE.txt).
+  Axes: wght 200–700, BEVL 1–100. `format('woff2-variations')` keeps
+  browsers without variable-font support from downloading these files,
+  falling back to the system font stack below.
+*/
+@font-face {
+  font-family: 'Alimama FangYuanTi VF';
+  src: url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2-variations');
+  font-weight: 200 700;
+  font-display: swap;
+  unicode-range: U+0020-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Alimama FangYuanTi VF';
+  src: url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2-variations');
+  font-weight: 200 700;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+4E00-9FFF;
+}
+
+.font-title,
+.nav-link {
+  font-family:
+    'Alimama FangYuanTi VF',
+    var(--font-atkinson),
+    'PingFang SC',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Variable-font niceties for nav links on browsers that support them:
+   hover/active ramp the BEVL (bevel) axis — this font's signature depth
+   effect. wght stays fixed on purpose: it changes glyph advance widths and
+   would make nav items shift horizontally. Plain fallbacks elsewhere: the
+   existing opacity fade and static font-semibold. */
+@supports (font-variation-settings: normal) {
+  .nav-link {
+    font-weight: 300;
+    font-variation-settings: 'BEVL' 1;
+    transition:
+      opacity 0.15s,
+      font-variation-settings 0.25s;
+  }
+  .nav-link:hover {
+    font-variation-settings: 'BEVL' 35;
+  }
+  .nav-link.font-semibold {
+    font-variation-settings: 'BEVL' 55;
+  }
+}
+
 :root {
   --hue: 220;
   --sat: 14%;
