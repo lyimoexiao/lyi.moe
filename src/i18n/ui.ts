@@ -27,6 +27,11 @@ export const ui = {
     'rss.feed': 'RSS 订阅',
     'post.license': '本文采用 CC BY-NC-SA 4.0 许可协议',
     'footer.github': 'GitHub',
+    'error.404.title': '页面未找到',
+    'error.404.description': '抱歉，您访问的页面不存在或已被移动。',
+    'error.500.title': '服务器错误',
+    'error.500.description': '抱歉，页面出错了，请稍后再试。',
+    'error.backHome': '返回首页',
   },
   'en': {
     'nav.home': 'Home',
@@ -49,6 +54,11 @@ export const ui = {
     'rss.feed': 'RSS feed',
     'post.license': 'This article is licensed under CC BY-NC-SA 4.0',
     'footer.github': 'GitHub',
+    'error.404.title': 'Page not found',
+    'error.404.description': "Sorry, the page you're looking for doesn't exist or has been moved.",
+    'error.500.title': 'Server error',
+    'error.500.description': 'Sorry, something went wrong. Please try again later.',
+    'error.backHome': 'Back to home',
   },
 } as const
 

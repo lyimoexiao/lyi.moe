@@ -1,0 +1,35 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n'
+import BaseHead from '../components/BaseHead.astro'
+import Footer from '../components/Footer.astro'
+import Header from '../components/Header.astro'
+import { getLocale, useTranslations } from '../i18n/ui'
+
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const homeHref = getRelativeLocaleUrl(locale, '')
+---
+
+<!doctype html>
+<html lang={locale === 'en' ? 'en' : 'zh-CN'}>
+	<head>
+		<BaseHead title={`${t('error.404.title')} - ${t('site.title')}`} description={t('error.404.description')} />
+	</head>
+	<body>
+		<Header />
+		<main class="flex flex-col px-4 py-16 sm:px-6">
+			<div class="mx-auto max-w-3xl flex flex-col items-center text-center">
+				<p class="font-title text-6xl font-700 tracking-tight">404</p>
+				<h1 class="mt-6 text-3xl font-700 tracking-tight text-balance">{t('error.404.title')}</h1>
+				<p class="mt-2 text-base opacity-75">{t('error.404.description')}</p>
+				<a
+					href={homeHref}
+					class="mt-8 rounded-full bg-text-1 px-6 py-2 font-600 text-bg-1 transition-opacity hover:opacity-80"
+				>
+					{t('error.backHome')}
+				</a>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
