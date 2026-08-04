@@ -9,6 +9,7 @@ import Header from '../components/Header.astro'
 import RandomBackground from '../components/RandomBackground.astro'
 import SocialLinks from '../components/SocialLinks.astro'
 import TypeQuote from '../components/TypeQuote.astro'
+import { siteDescription, siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 import { getPosts } from '../lib/posts'
 
@@ -21,7 +22,7 @@ const posts = (await getPosts(locale)).slice(0, 3)
 <!doctype html>
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={t('site.title')} description={t('site.description')} />
+		<BaseHead title={siteTitle(locale)} description={siteDescription(locale)} />
 	</head>
 	<body>
 		<RandomBackground />
@@ -36,7 +37,7 @@ const posts = (await getPosts(locale)).slice(0, 3)
   loading="eager"
   class="img-outline rounded-full h-20 w-20"
 	/>
-				<h1 class="font-title text-3xl tracking-tight font-300 mt-4 text-balance">{t('site.title')}</h1>
+				<h1 class="font-title text-3xl tracking-tight font-300 mt-4 text-balance">{siteTitle(locale)}</h1>
 				<TypeQuote />
 				<SocialLinks />
 				{

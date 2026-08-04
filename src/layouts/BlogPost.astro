@@ -6,6 +6,7 @@ import BaseHead from '../components/BaseHead.astro'
 import Footer from '../components/Footer.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 import Header from '../components/Header.astro'
+import { siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 
 type Props = CollectionEntry<'blog'>['data']
@@ -17,7 +18,7 @@ const t = useTranslations(locale)
 
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={`${title} - ${t('site.title')}`} description={description} image={heroImage} />
+		<BaseHead title={`${title} - ${siteTitle(locale)}`} description={description} image={heroImage} />
 	</head>
 	<body>
 		<Header />
@@ -84,7 +85,7 @@ const labels = {
 document.addEventListener('astro:page-load', () => {
   const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en'
   const { copy, copied } = labels[lang]
-  for (const pre of document.querySelectorAll('.prose pre.astro-code')) {
+  for (const pre of document.querySelectorAll<HTMLElement>('.prose pre.astro-code')) {
     if (pre.dataset.copyBtn)
       continue
     pre.dataset.copyBtn = 'true'
@@ -118,7 +119,7 @@ document.addEventListener('astro:page-load', () => {
     })
     pre.appendChild(btn)
   }
-  for (const a of document.querySelectorAll('.prose a[href^="http"]')) {
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('.prose a[href^="http"]')) {
     if (a.dataset.external)
       continue
     a.dataset.external = 'true'

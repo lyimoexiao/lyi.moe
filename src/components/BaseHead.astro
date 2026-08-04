@@ -3,7 +3,8 @@ import type { ImageMetadata } from 'astro'
 import { Font } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import { ClientRouter } from 'astro:transitions'
-import { getLocale, useTranslations } from '../i18n/ui'
+import { siteTitle } from '../config'
+import { getLocale } from '../i18n/ui'
 // Import the stylesheets here so that they are included on
 // all pages through the use of the <BaseHead /> component.
 import '../styles/fonts.css'
@@ -20,7 +21,6 @@ interface Props {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const locale = getLocale(Astro.currentLocale)
-const t = useTranslations(locale)
 const rssURL = new URL(getRelativeLocaleUrl(locale, 'rss.xml').replace(/\/$/, ''), Astro.site)
 
 const { title, description, image } = Astro.props;
@@ -57,7 +57,7 @@ applyTheme()
 <link
   rel="alternate"
   type="application/rss+xml"
-  title={t('site.title')}
+  title={siteTitle(locale)}
   href={rssURL}
 />
 <meta name="generator" content={Astro.generator} />

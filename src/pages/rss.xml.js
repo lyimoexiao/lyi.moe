@@ -1,4 +1,5 @@
 import rss from '@astrojs/rss'
+import { siteDescription, siteTitle } from '../config'
 import { useTranslations } from '../i18n/ui'
 import { getPosts } from '../lib/posts'
 
@@ -8,8 +9,8 @@ export async function GET(context) {
   const t = useTranslations(locale)
   const posts = await getPosts(locale)
   return rss({
-    title: `${t('site.title')} - ${t('blog.title')}`,
-    description: t('site.description'),
+    title: `${siteTitle(locale)} - ${t('blog.title')}`,
+    description: siteDescription(locale),
     site: context.site,
     items: posts.map(post => ({
       ...post.data,

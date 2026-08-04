@@ -30,12 +30,13 @@
 
 <script>
 // Attach once; document-level listeners survive view-transition navigation.
-if (!window.__loadingBarInit) {
-  window.__loadingBarInit = true
+const w = window as Window & { __loadingBarInit?: boolean }
+if (!w.__loadingBarInit) {
+  w.__loadingBarInit = true
 
   const threshold = 200
-  let pending
-  let trickle
+  let pending: ReturnType<typeof setTimeout> | undefined
+  let trickle: ReturnType<typeof setInterval> | undefined
   let active = false
   let progress = 0
 

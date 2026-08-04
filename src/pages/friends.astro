@@ -3,6 +3,7 @@ import BaseHead from '../components/BaseHead.astro'
 import Footer from '../components/Footer.astro'
 import FriendImage from '../components/FriendImage.astro'
 import Header from '../components/Header.astro'
+import { siteDescription, siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 import { friends } from '../lib/friends'
 
@@ -13,7 +14,7 @@ const t = useTranslations(locale)
 <!doctype html>
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={`${t('nav.friends')} - ${t('site.title')}`} description={t('site.description')} />
+		<BaseHead title={`${t('nav.friends')} - ${siteTitle(locale)}`} description={siteDescription(locale)} />
 	</head>
 	<body>
 		<Header />
@@ -61,7 +62,7 @@ const t = useTranslations(locale)
 										<a
   href={friend.feed}
   target="_blank"
-  class="rounded op-fade inline-flex h-8 w-8 tap-scale transition-opacity items-center right-3 top-3 justify-center absolute hover:bg-active hover:op100"
+  class="rounded op-fade inline-flex h-8 w-8 tap-scale transition-colors items-center right-3 top-3 justify-center absolute hover:color-[#fbbf24] hover:bg-[#fbbf24]/12 hover:op100"
   aria-label={t('rss.feed')}
   title={t('rss.feed')}
 										>

@@ -1,5 +1,5 @@
 ---
-import { AUTHOR_NAME } from '../consts'
+import { siteConfig } from '../config'
 
 const today = new Date()
 ---
@@ -17,7 +17,7 @@ const today = new Date()
 			</a>
 			<p class="text-sm op-mute inline-flex gap-1 items-center">
 				<span class="i-ph-copyright" />
-				{today.getFullYear()} {AUTHOR_NAME}
+				{today.getFullYear()} {siteConfig.author}
 			</p>
 		</div>
 	</div>

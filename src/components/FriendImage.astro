@@ -45,7 +45,7 @@ const fallbackFontSize = `${Math.max(7, Math.round(width * 0.5))}px`
 
 <span class:list={['relative block overflow-hidden', wrapClass]} data-fi>
 	<Image
-  src={src}
+  src={src as ImageMetadata}
   alt={alt}
   width={width}
   height={height}
@@ -66,11 +66,11 @@ const fallbackFontSize = `${Math.max(7, Math.round(width * 0.5))}px`
 // document and re-scans on client-side navigation (astro:page-load), guarded
 // per wrapper with a data flag so swapped-in nodes are initialized exactly once.
 ;(() => {
-  const init = (wrap) => {
+  const init = (wrap: HTMLElement) => {
     if (wrap.dataset.fiInit)
       return
     wrap.dataset.fiInit = '1'
-    const img = wrap.querySelector('[data-fi-img]')
+    const img = wrap.querySelector<HTMLImageElement>('[data-fi-img]')
     const shimmer = wrap.querySelector('.fi-shimmer')
     const fb = wrap.querySelector('.fi-fallback')
     // Hold the image until it is fully loaded so a partially-decoded image
@@ -93,7 +93,7 @@ const fallbackFontSize = `${Math.max(7, Math.round(width * 0.5))}px`
     if (img?.complete)
       img.naturalWidth > 0 ? reveal() : fail()
   }
-  const scan = () => document.querySelectorAll('[data-fi]').forEach(init)
+  const scan = () => document.querySelectorAll<HTMLElement>('[data-fi]').forEach(init)
   document.addEventListener('astro:page-load', scan)
   scan()
 })()

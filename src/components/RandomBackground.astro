@@ -62,6 +62,8 @@ const bgs = {
 <div id="page-bg-credit" class="text-xs op-70 bottom-3 right-3 fixed z-1" hidden></div>
 
 <script is:inline define:vars={{ bgs, credits }}>
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-nocheck -- runtime JS; bgs/credits are injected by define:vars above.
 // Picks one background per visit, matching the layout breakpoint (sm).
 // The image is preloaded (via Image) before it is shown: the layer fades in
 // only on success, the credit appears only after the image actually loads,
@@ -88,6 +90,7 @@ const bgs = {
     if (!creditEl)
       return
     const file = root.classList.contains('dark') ? bg.darkFile : bg.lightFile
+    // credits is injected at runtime by define:vars; the checker can't see it.
     const credit = file && credits[bg.dir]?.[file]
     if (!credit) {
       creditEl.hidden = true

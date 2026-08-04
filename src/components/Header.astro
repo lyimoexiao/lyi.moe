@@ -1,6 +1,7 @@
 ---
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import avatar from '../assets/avatar.jpg'
+import { siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 import FriendImage from './FriendImage.astro'
 import HeaderLink from './HeaderLink.astro'
@@ -35,7 +36,7 @@ const navLinks = [
 			<a
   href={homeHref}
   class="font-title tracking-tight font-300 flex gap-2 transition-opacity items-center hover:op80"
-  title={t('site.title')}
+  title={siteTitle(locale)}
 			>
 				<FriendImage
   src={avatar}
@@ -44,7 +45,7 @@ const navLinks = [
   height={28}
   wrapClass="img-outline rounded-full h-7 w-7"
 				/>
-				{t('site.title')}
+				{siteTitle(locale)}
 			</a>
 		)}
 		<div class:list={['flex gap-1 items-center ml-auto px-1.5', isHome && 'bg-nav rounded-full']}>

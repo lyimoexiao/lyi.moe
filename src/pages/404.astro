@@ -3,6 +3,7 @@ import { getRelativeLocaleUrl } from 'astro:i18n'
 import BaseHead from '../components/BaseHead.astro'
 import Footer from '../components/Footer.astro'
 import Header from '../components/Header.astro'
+import { siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 
 const locale = getLocale(Astro.currentLocale)
@@ -13,7 +14,7 @@ const homeHref = getRelativeLocaleUrl(locale, '')
 <!doctype html>
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={`${t('error.404.title')} - ${t('site.title')}`} description={t('error.404.description')} />
+		<BaseHead title={`${t('error.404.title')} - ${siteTitle(locale)}`} description={t('error.404.description')} />
 	</head>
 	<body>
 		<Header />

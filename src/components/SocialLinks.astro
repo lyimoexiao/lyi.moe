@@ -1,15 +1,15 @@
 ---
-import { SOCIAL_LINK_STYLE, SOCIAL_LINKS } from '../socials'
+import { siteConfig } from '../config'
 ---
 
 <div class="mt-4 flex gap-3">
 	{
-		SOCIAL_LINKS.map(link => (
+		siteConfig.social.map(link => (
 			<a
   href={link.href}
   target="_blank"
   rel="noopener noreferrer"
-  class={`rounded inline-flex h-10 w-10 tap-scale transition-colors items-center justify-center ${SOCIAL_LINK_STYLE.color}  ${link.hoverColor ?? SOCIAL_LINK_STYLE.hoverColor}  ${link.hoverBg ?? SOCIAL_LINK_STYLE.hoverBg}`}
+  class={`rounded inline-flex h-10 w-10 tap-scale transition-colors items-center justify-center ${siteConfig.socialStyle.color}  ${link.hoverColor ?? siteConfig.socialStyle.hoverColor}  ${link.hoverBg ?? siteConfig.socialStyle.hoverBg}`}
   aria-label={link.name}
   title={link.name}
 			>
