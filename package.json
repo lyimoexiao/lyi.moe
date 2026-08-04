@@ -26,6 +26,7 @@
     "@astrojs/check": "^0.9.10",
     "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/ph": "^1.2.2",
+    "@iconify-json/ri": "^1.2.10",
     "@unocss/astro": "^66.7.5",
     "@unocss/eslint-plugin": "^66.7.5",
     "eslint": "^10.8.0",

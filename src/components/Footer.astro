@@ -1,9 +1,7 @@
 ---
 import { AUTHOR_NAME } from '../consts'
-import { getLocale, useTranslations } from '../i18n/ui'
 
 const today = new Date()
-const t = useTranslations(getLocale(Astro.currentLocale))
 ---
 
 <footer class="border-t border-base">
@@ -22,15 +20,5 @@ const t = useTranslations(getLocale(Astro.currentLocale))
 				{today.getFullYear()} {AUTHOR_NAME}
 			</p>
 		</div>
-		<a
-  href="https://github.com/lyimoexiao"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="btn-icon tap-scale"
-  aria-label={t('footer.github')}
-  title={t('footer.github')}
-		>
-			<span class="i-ph-github-logo" />
-		</a>
 	</div>
 </footer>

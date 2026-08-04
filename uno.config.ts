@@ -10,6 +10,16 @@ export default defineConfig({
   // Icon classes referenced from scripts (copy button) are not visible to
   // the scanner, which only sees rendered template output.
   safelist: ['i-ph-copy', 'i-ph-check', 'i-ph-arrow-up-right', 'i-ph-image-broken'],
+  // socials.ts is a plain .ts module: the default pipeline include
+  // (jsx/tsx/vue/svelte/astro/html) skips it, and the filesystem scan applies
+  // the same filter, so its icon/color classes would never be extracted.
+  // Pull the file from disk and let plain ts/js through the pipeline.
+  content: {
+    filesystem: ['src/socials.ts'],
+    pipeline: {
+      include: [/\.(vue|svelte|[jt]sx|[jt]s|vine.ts|mdx?|astro|elm|php|phtml|marko|html)($|\?)/],
+    },
+  },
   theme: {
     font: {
       sans: ['var(--font-atkinson)', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],

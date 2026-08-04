@@ -7,6 +7,7 @@ import Footer from '../components/Footer.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 import Header from '../components/Header.astro'
 import RandomBackground from '../components/RandomBackground.astro'
+import SocialLinks from '../components/SocialLinks.astro'
 import TypeQuote from '../components/TypeQuote.astro'
 import { getLocale, useTranslations } from '../i18n/ui'
 import { getPosts } from '../lib/posts'
@@ -35,13 +36,14 @@ const posts = (await getPosts(locale)).slice(0, 3)
   loading="eager"
   class="img-outline rounded-full h-20 w-20"
 	/>
-				<h1 class="font-title text-3xl tracking-tight font-300 mt-6 text-balance">{t('site.title')}</h1>
+				<h1 class="font-title text-3xl tracking-tight font-300 mt-4 text-balance">{t('site.title')}</h1>
 				<TypeQuote />
+				<SocialLinks />
 				{
 					posts.length > 0 && (
 						<section>
-							<hr class="my-10 border-none h-px from-transparent to-transparent via-c-border bg-linear-to-r" />
-							<h2 class="text-lg font-600 mb-6">{t('home.latest')}</h2>
+							<hr class="my-4 border-none h-px from-transparent to-transparent via-c-border bg-linear-to-r" />
+							<h2 class="text-lg font-600 mb-4">{t('home.latest')}</h2>
 							<ul class="flex flex-col">
 								{
 									posts.map(post => (
