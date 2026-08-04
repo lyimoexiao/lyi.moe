@@ -46,7 +46,7 @@ export const friends: Friend[] = [
     feed: 'https://blog.zhilu.site/atom.xml',
   },
   {
-    author: 'ChuYao',
+    author: `Dokiu's Blog`,
     desc: '不知道干什么就只有摆烂了',
     link: 'https://blog.yaooa.cn',
     icon: 'https://blog.adokiu.com/avatar.png',
