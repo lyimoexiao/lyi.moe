@@ -10,12 +10,12 @@
 import fs from 'node:fs'
 import credits from '../bg-credits.json'
 
-const IMG_EXT = /\.(avif|jpe?g|png|webp)$/i
+const IMG_EXT = /\.(?:avif|jpe?g|png|webp)$/i
 
 function listBgs(dir: string) {
   const files = fs.readdirSync(`public/bg/${dir}`).filter(f => IMG_EXT.test(f))
   // Group by base name, tracking which variant each file provides.
-  const byBase = new Map<string, { plain?: string; light?: string; dark?: string }>()
+  const byBase = new Map<string, { plain?: string, light?: string, dark?: string }>()
   for (const f of files) {
     const key = f.replace(/(_light|_dark)?\.\w+$/, '')
     const group = byBase.get(key) ?? {}
@@ -27,7 +27,7 @@ function listBgs(dir: string) {
       group.dark = f
     byBase.set(key, group)
   }
-  return [...byBase.entries()].flatMap(([base, g]) => {
+  return [...byBase.entries()].flatMap(([, g]) => {
     // plain exists → default for light, falls back to plain for dark.
     if (g.plain) {
       return [{ light: g.plain, dark: g.dark || g.plain }]
@@ -53,13 +53,13 @@ const bgs = {
 }
 ---
 
-<div id="page-bg" class="fixed inset-0 -z-1 bg-cover bg-center opacity-0 transition-[opacity] duration-500" aria-hidden="true">
-	<div class="absolute inset-0 transition-[background-color] duration-300" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
+<div id="page-bg" class="opacity-0 transition-[opacity] duration-500 inset-0 fixed bg-cover bg-center -z-1" aria-hidden="true">
+	<div class="transition-[background-color] duration-300 inset-0 absolute" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
 </div>
-<div id="page-bg-alt" class="fixed inset-0 -z-1 bg-cover bg-center opacity-0 transition-[opacity] duration-500" aria-hidden="true">
-	<div class="absolute inset-0 transition-[background-color] duration-300" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
+<div id="page-bg-alt" class="opacity-0 transition-[opacity] duration-500 inset-0 fixed bg-cover bg-center -z-1" aria-hidden="true">
+	<div class="transition-[background-color] duration-300 inset-0 absolute" style="background: color-mix(in srgb, var(--c-bg) 55%, transparent)" />
 </div>
-<div id="page-bg-credit" class="fixed right-3 bottom-3 z-1 text-xs op-70" hidden></div>
+<div id="page-bg-credit" class="text-xs op-70 bottom-3 right-3 fixed z-1" hidden></div>
 
 <script is:inline define:vars={{ bgs, credits }}>
 // Picks one background per visit, matching the layout breakpoint (sm).
@@ -165,8 +165,8 @@ const bgs = {
   }
 
   function waitTransition(el) {
-    const dur = parseFloat(getComputedStyle(el).transitionDuration) * 1000 || 0
-    return new Promise((resolve) => setTimeout(resolve, dur))
+    const dur = Number.parseFloat(getComputedStyle(el).transitionDuration) * 1000 || 0
+    return new Promise(resolve => setTimeout(resolve, dur))
   }
 
   async function crossFade(url, token) {
@@ -209,8 +209,9 @@ const bgs = {
     const h = sampleHue(img)
     if (h != null)
       root.style.setProperty('--bg-h', `${Math.round(h)}`)
-    if (main.style.backgroundImage)
+    if (main.style.backgroundImage) {
       await crossFade(url, token)
+    }
     else {
       main.style.backgroundImage = `url(${url})`
       main.classList.remove('opacity-0')

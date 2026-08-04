@@ -17,14 +17,14 @@ const homeHref = getRelativeLocaleUrl(locale, '')
 	</head>
 	<body>
 		<Header />
-		<main class="flex flex-col px-4 py-16 sm:px-6">
-			<div class="mx-auto max-w-3xl flex flex-col items-center text-center">
-				<p class="font-title text-6xl font-700 tracking-tight">404</p>
-				<h1 class="mt-6 text-3xl font-700 tracking-tight text-balance">{t('error.404.title')}</h1>
-				<p class="mt-2 text-base opacity-75">{t('error.404.description')}</p>
+		<main class="px-4 py-16 flex flex-col sm:px-6">
+			<div class="mx-auto text-center flex flex-col max-w-3xl items-center">
+				<p class="font-title text-6xl tracking-tight font-700">404</p>
+				<h1 class="text-3xl tracking-tight font-700 mt-6 text-balance">{t('error.404.title')}</h1>
+				<p class="text-base mt-2 opacity-75">{t('error.404.description')}</p>
 				<a
-					href={homeHref}
-					class="mt-8 rounded-full bg-text-1 px-6 py-2 font-600 text-bg-1 transition-opacity hover:opacity-80"
+  href={homeHref}
+  class="bg-text-1 text-bg-1 font-600 mt-8 px-6 py-2 rounded-full transition-opacity hover:opacity-80"
 				>
 					{t('error.backHome')}
 				</a>

@@ -1,9 +1,10 @@
 ---
 import { quotes } from '../quotes'
+
 const first = quotes[0] ?? ''
 ---
 
-<p id="type-quote" class="mt-2 op-fade max-w-[65ch] text-pretty cursor-pointer">
+<p id="type-quote" class="mt-2 op-fade max-w-[65ch] cursor-pointer text-pretty">
 	<span id="type-quote-text">{first}</span><span class="type-cursor" aria-hidden="true"></span>
 </p>
 

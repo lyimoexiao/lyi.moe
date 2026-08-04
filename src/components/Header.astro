@@ -34,7 +34,7 @@ const navLinks = [
 		{!isHome && (
 			<a
   href={homeHref}
-  class="font-title tracking-tight font-300 flex items-center gap-2 transition-opacity hover:op80"
+  class="font-title tracking-tight font-300 flex gap-2 transition-opacity items-center hover:op80"
   title={t('site.title')}
 			>
 				<FriendImage
@@ -48,7 +48,7 @@ const navLinks = [
 			</a>
 		)}
 		<div class:list={['flex gap-1 items-center ml-auto px-1.5', isHome && 'bg-nav rounded-full']}>
-			<div class="hidden gap-1 items-center sm:flex">
+			<div class="gap-1 hidden items-center sm:flex">
 				{
 					navLinks.map(link => (
 						<HeaderLink href={link.href}>{link.label}</HeaderLink>
@@ -75,16 +75,16 @@ const navLinks = [
 			</button>
 			<details class="relative sm:hidden">
 				<summary
-  class="btn-header h-10 w-10 cursor-pointer list-none [&::-webkit-details-marker]:hidden [&::marker]:content-none"
+  class="list-none btn-header h-10 w-10 cursor-pointer [&::-webkit-details-marker]:hidden [&::marker]:content-none"
   aria-label={t('nav.menu')}
   title={t('nav.menu')}
 				>
 					<span class="i-ph-list text-lg m-auto" />
 				</summary>
-				<nav class="absolute right-0 top-full mt-2 w-40 rounded-lg border border-base bg-nav p-1 shadow-lg">
+				<nav class="mt-2 p-1 border border-base rounded-lg bg-nav w-40 shadow-lg right-0 top-full absolute">
 					{
 						navLinks.map(link => (
-							<HeaderLink href={link.href} class="block px-3 py-2">{link.label}</HeaderLink>
+							<HeaderLink href={link.href} class="px-3 py-2 block">{link.label}</HeaderLink>
 						))
 					}
 				</nav>

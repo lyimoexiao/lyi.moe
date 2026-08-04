@@ -55,7 +55,7 @@ export const ui = {
     'post.license': 'This article is licensed under CC BY-NC-SA 4.0',
     'footer.github': 'GitHub',
     'error.404.title': 'Page not found',
-    'error.404.description': "Sorry, the page you're looking for doesn't exist or has been moved.",
+    'error.404.description': 'Sorry, the page you\'re looking for doesn\'t exist or has been moved.',
     'error.500.title': 'Server error',
     'error.500.description': 'Sorry, something went wrong. Please try again later.',
     'error.backHome': 'Back to home',

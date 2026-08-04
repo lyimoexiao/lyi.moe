@@ -7,7 +7,7 @@ const { date } = Astro.props
 const locale = Astro.currentLocale === 'en' ? 'en-US' : 'zh-CN'
 ---
 
-<time datetime={date.toISOString()} class="text-mini font-mono color-c-text-2 tabular-nums">
+<time datetime={date.toISOString()} class="text-mini color-c-text-2 font-mono tabular-nums">
 	{
 		date.toLocaleDateString(locale, {
 			year: 'numeric',

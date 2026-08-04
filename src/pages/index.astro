@@ -25,8 +25,8 @@ const posts = (await getPosts(locale)).slice(0, 3)
 	<body>
 		<RandomBackground />
 		<Header />
-		<main class="flex flex-col px-4 py-10 sm:justify-center sm:px-6 sm:py-16">
-			<div class="mx-auto w-full max-w-3xl mt-auto sm:mt-0 bg-tinted">
+		<main class="px-4 py-10 flex flex-col sm:px-6 sm:py-16 sm:justify-center">
+			<div class="bg-tinted mx-auto mt-auto max-w-3xl w-full sm:mt-0">
 	<Image
   src={avatar}
   alt="Lyi."
@@ -34,13 +34,13 @@ const posts = (await getPosts(locale)).slice(0, 3)
   height={160}
   loading="eager"
   class="img-outline rounded-full h-20 w-20"
-		/>
+	/>
 				<h1 class="font-title text-3xl tracking-tight font-300 mt-6 text-balance">{t('site.title')}</h1>
 				<TypeQuote />
 				{
 					posts.length > 0 && (
 						<section>
-							<hr class="my-10 h-px border-none bg-linear-to-r from-transparent via-c-border to-transparent" />
+							<hr class="my-10 border-none h-px from-transparent to-transparent via-c-border bg-linear-to-r" />
 							<h2 class="text-lg font-600 mb-6">{t('home.latest')}</h2>
 							<ul class="flex flex-col">
 								{
