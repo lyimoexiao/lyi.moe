@@ -33,6 +33,7 @@ function codeTheme(mode) {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://lyi.moe',
+  trailingSlash: 'never',
   integrations: [unoCSS(), mdx(), sitemap()],
   markdown: {
     shikiConfig: {

@@ -9,11 +9,12 @@ import Header from '../components/Header.astro'
 import { siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 
-type Props = CollectionEntry<'blog'>['data']
+type Props = CollectionEntry<'blog'>['data'] & { words: number }
 
-const { title, description, pubDate, updatedDate, heroImage, license } = Astro.props
+const { title, description, pubDate, updatedDate, heroImage, license, category, words } = Astro.props
 const locale = getLocale(Astro.currentLocale)
 const t = useTranslations(locale)
+const onCover = Boolean(heroImage)
 ---
 
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
@@ -23,56 +24,127 @@ const t = useTranslations(locale)
 	<body>
 		<Header />
 		<main class="px-4 py-12 sm:px-6">
-			<article class="mx-auto max-w-3xl">
-				{
-					heroImage && (
-					<Image
+			<div class="grid grid-cols-1 items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(0,1fr)]">
+				<article class="mx-auto max-w-3xl w-full xl:col-start-2">
+				<a href={getRelativeLocaleUrl(locale, 'blog')} class="btn-action-sm tap-scale">
+					<span class="i-ph-arrow-left" />
+					{t('blog.back')}
+				</a>
+				<header class:list={['relative mt-6', onCover && 'overflow-hidden rounded-xl']}>
+					{
+						heroImage && (
+							<Image
   src={heroImage}
   alt=""
   width={1020}
   height={510}
   loading="eager"
-  class="img-outline rounded-lg"
-					/>
-					)
-				}
-				<header class="mt-8 max-w-[65ch]">
-					<a href={getRelativeLocaleUrl(locale, 'blog')} class="btn-action-sm tap-scale">
-						<span class="i-ph-arrow-left" />
-						{t('blog.back')}
-					</a>
-					<div class="text-mini color-c-text-2 font-mono mt-6 flex gap-2 items-center tabular-nums">
-						<FormattedDate date={pubDate} />
-						{
-							updatedDate && (
-								<span>
-									&middot; {t('blog.updated')} <FormattedDate date={updatedDate} />
-								</span>
-							)
-						}
+  class="h-full w-full inset-0 absolute object-cover"
+							/>
+						)
+					}
+					<div
+  class:list={[
+    'relative flex flex-col justify-end gap-3',
+    onCover ? 'min-h-[16rem] bg-linear-to-t from-black/55 via-black/25 to-transparent px-4 py-5 sm:min-h-[18rem] sm:px-6 sm:py-6' : 'py-2',
+  ]}
+					>
+						<div
+  class:list={['flex flex-wrap gap-x-4 gap-y-1 items-center text-xs font-mono tabular-nums', onCover ? 'text-white/70' : 'color-c-text-2']}
+						>
+							<FormattedDate date={pubDate} tone={onCover ? 'light' : 'muted'} />
+							{
+								updatedDate && (
+									<span class="inline-flex gap-1 items-center">
+										&middot; {t('blog.updated')} <FormattedDate date={updatedDate} tone={onCover ? 'light' : 'muted'} />
+									</span>
+								)
+							}
+							{
+								category && (
+									<span class:list={['inline-flex gap-1 items-center', onCover ? 'text-white/90' : 'color-active']}>
+										<span class="i-ph-folder-open" />
+										{category}
+									</span>
+								)
+							}
+							<span class="inline-flex gap-1 items-center">
+								<span class="i-ph-text-t" />
+								{words.toLocaleString()} {t('post.words')}
+							</span>
+						</div>
+						<h1 class:list={['font-title text-3xl tracking-tight font-700 text-balance', onCover && 'text-white drop-shadow-md']}>
+							{title}
+						</h1>
 					</div>
-					<h1 class="font-title text-3xl tracking-tight font-700 mt-3 text-balance">{title}</h1>
-					{
-						license && (
-							<a
+				</header>
+				{
+					license && (
+						<a
   href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
   target="_blank"
   rel="noopener noreferrer"
   class="text-mini mt-6 op-mute inline-flex gap-1 transition-opacity items-center hover:op100"
-							>
-								<span class="i-fa6-brands-creative-commons" />
-								{t('post.license')}
-							</a>
-						)
-					}
-					<hr class="my-8 border-base" />
-				</header>
+						>
+							<span class="i-fa6-brands-creative-commons" />
+							{t('post.license')}
+						</a>
+					)
+				}
+				<hr class="my-8 border-base" />
 				<div class="prose">
 					<slot />
 				</div>
-			</article>
+				</article>
+				<nav
+  id="toc"
+  aria-label={t('toc.title')}
+  class="max-h-[calc(100dvh-7rem)] w-52 hidden top-24 justify-self-end sticky overflow-y-auto xl:block"
+				>
+					<p class="text-sm color-c-text-2 font-600 pb-2 bg-c-bg top-0 sticky z-10">{t('toc.title')}</p>
+					<ul id="toc-list" class="toc text-sm mt-2 flex flex-col gap-1.5" />
+				</nav>
+			</div>
 		</main>
-		<Footer />
+		<button
+  id="toc-toggle"
+  type="button"
+  style="display: none"
+  class="text-c-text-1 p-2 rounded-lg bg-c-bg/50 inline-flex transition-colors items-center bottom-6 right-6 fixed z-50 backdrop-blur-md hover:text-c-accent-text hover:bg-c-bg/80 xl:hidden"
+  aria-label={t('toc.title')}
+  aria-controls="toc-drawer"
+  aria-expanded="false"
+		>
+		<span class="i-ph-list text-lg" />
+	</button>
+	<div
+  id="toc-drawer"
+  style="display: none"
+  aria-hidden="true"
+  class="inset-0 fixed z-70"
+	>
+		<div id="toc-mask" class="bg-black/25 opacity-0 transition-opacity duration-200 inset-0 absolute" />
+		<div
+  id="toc-panel"
+  class="p-4 max-w-[85vw] w-72 translate-x-full transition-transform duration-200 right-0 top-0 absolute"
+		>
+			<div class="p-4 rounded-xl bg-c-bg/70 flex flex-col max-h-[calc(100dvh-2rem)] shadow-xl backdrop-blur-xl">
+				<div class="pb-2 flex items-center justify-between">
+					<p class="text-sm color-c-text-2 font-600">{t('toc.title')}</p>
+					<button
+  id="toc-close"
+  type="button"
+  class="btn-header h-8 w-8"
+  aria-label={t('toc.close')}
+					>
+						<span class="i-ph-x text-lg m-auto" />
+					</button>
+				</div>
+				<ul id="toc-drawer-list" class="toc text-sm mt-3 flex flex-col gap-1.5 min-h-0 overflow-y-auto" />
+			</div>
+		</div>
+	</div>
+	<Footer />
 	</body>
 </html>
 
@@ -82,7 +154,247 @@ const labels = {
   en: { copy: 'Copy', copied: 'Copied' },
 }
 
+// Build the table of contents from article headings, inject per-heading
+// anchor links, and highlight the section in view. Rebuilt on every
+// client-side navigation: View Transitions replace the DOM, so all element
+// lookups happen per call and never get cached across navigations.
+// Shared scroll-spy state: swapped on every navigation so the single
+// module-level listener below always tracks the current page's headings.
+let tocState: { headings: HTMLElement[], positions: number[], setActive: (id: string) => void } | null = null
+let tocScrollTimer = 0
+
+function updateTocSpy() {
+  const state = tocState
+  if (!state)
+    return
+  // A heading is active once its top passes just below the sticky header
+  // (matches .prose headings' scroll-margin-top of 5.5rem), like blog-v3.
+  const line = window.scrollY + 88
+  let active = state.headings[0]
+  for (let i = 0; i < state.positions.length; i++) {
+    if (state.positions[i] <= line)
+      active = state.headings[i]
+  }
+  state.setActive(active.id)
+}
+window.addEventListener('scroll', updateTocSpy, { passive: true })
+window.addEventListener('resize', () => {
+  if (tocState)
+    tocState.positions = tocState.headings.map(h => h.getBoundingClientRect().top + window.scrollY)
+  updateTocSpy()
+})
+
+function buildToc() {
+  const nav = document.getElementById('toc')
+  const list = document.getElementById('toc-list')
+  const drawerList = document.getElementById('toc-drawer-list')
+  const toggle = document.getElementById('toc-toggle')
+  if (!list || !drawerList)
+    return
+  list.innerHTML = ''
+  drawerList.innerHTML = ''
+  const headings = [...document.querySelectorAll<HTMLElement>('.prose h2, .prose h3')].filter(h => h.id)
+  const hasToc = headings.length > 0
+  if (nav)
+    nav.style.display = hasToc ? '' : 'none'
+  if (toggle)
+    toggle.style.display = hasToc ? '' : 'none'
+  if (!hasToc)
+    return
+  // Flat items; `section` is the h2 a heading belongs to, for has-active.
+  // `container` is the entry's own scrollport (desktop nav vs drawer list).
+  const items: Array<{ heading: HTMLElement, li: HTMLLIElement, link: HTMLAnchorElement, section: HTMLElement | null, container: HTMLElement | null, headerH: number }> = []
+  let section: HTMLElement | null = null
+  for (const heading of headings) {
+    if (heading.tagName === 'H2')
+      section = heading
+    for (const [listEl, container] of [[list, nav], [drawerList, drawerList]] as const) {
+      const li = document.createElement('li')
+      if (heading.tagName === 'H3')
+        li.className = 'toc-sub'
+      const a = document.createElement('a')
+      a.href = `#${heading.id}`
+      a.textContent = heading.textContent
+      li.append(a)
+      listEl.append(li)
+      // The desktop nav's scrollport starts with the pinned header; the
+      // drawer's scrollport is the list itself.
+      const headerH = container && container === nav ? ((container.firstElementChild as HTMLElement | null)?.offsetHeight ?? 0) : 0
+      items.push({ heading, li, link: a, section, container, headerH })
+    }
+  }
+  // Keep the active entry pinned near the top of its own scrollport (the
+  // second visible row), unless the list has run out of room at the bottom.
+  // Keep the active entry as the second visible row (one row height below
+  // the scrollport top), clamped to the scrollable range. Positions come
+  // from getBoundingClientRect: li.offsetTop would be relative to the ul
+  // (.toc is position: relative), not the nav scrollport.
+  const keepActiveInView = (item: typeof items[number]) => {
+    const { li, container, headerH } = item
+    if (!container)
+      return
+    const containerRect = container.getBoundingClientRect()
+    const liRect = li.getBoundingClientRect()
+    const liTop = liRect.top - containerRect.top + container.scrollTop
+    const maxTop = container.scrollHeight - container.clientHeight
+    // Park the active row one row below the (possibly pinned) header: the
+    // second visible entry, unless the list has run out of room at the bottom.
+    const target = liTop - headerH - li.offsetHeight - 6
+    container.scrollTo({ top: Math.max(Math.min(target, maxTop), 0), behavior: 'smooth' })
+  }
+  let lastActiveId = ''
+  const setActive = (id: string) => {
+    let activeIndex = -1
+    items.forEach((item, i) => {
+      const active = item.heading.id === id
+      item.li.classList.toggle('active', active)
+      if (active)
+        activeIndex = i
+    })
+    // Smooth-scroll the TOC only after the page scroll has settled, so rapid
+    // section changes don't restart the animation on every scroll frame.
+    if (id !== lastActiveId) {
+      lastActiveId = id
+      window.clearTimeout(tocScrollTimer)
+      tocScrollTimer = window.setTimeout(() => {
+        items.forEach((item) => {
+          if (item.heading.id === id)
+            keepActiveInView(item)
+        })
+      }, 120)
+    }
+    // Light up the section h2 while one of its h3 children is active.
+    items.forEach((item, i) => {
+      if (i === activeIndex)
+        return
+      const isSectionOfActive = activeIndex >= 0
+        && item.heading.tagName === 'H2'
+        && items[activeIndex].heading.tagName === 'H3'
+        && items[activeIndex].section === item.heading
+      item.li.classList.toggle('has-active', isSectionOfActive)
+    })
+  }
+  // Scroll-spy: recompute on scroll from cached document positions (no
+  // layout reads per frame). The active heading is the last one whose top
+  // has crossed the 30% reading line. State is swapped per navigation so a
+  // single module-level listener always sees the current page's headings.
+  const positions = headings.map(h => h.getBoundingClientRect().top + window.scrollY)
+  tocState = { headings, positions, setActive }
+  updateTocSpy()
+}
+
+function openToc() {
+  const drawer = document.getElementById('toc-drawer')
+  const toggle = document.getElementById('toc-toggle')
+  const panel = document.getElementById('toc-panel')
+  const mask = document.getElementById('toc-mask')
+  if (!drawer || !toggle || !panel || !mask || drawer.style.display !== 'none')
+    return
+  drawer.style.display = ''
+  toggle.setAttribute('aria-expanded', 'true')
+  drawer.setAttribute('aria-hidden', 'false')
+  requestAnimationFrame(() => {
+    panel.classList.remove('translate-x-full')
+    mask.classList.remove('opacity-0')
+  })
+}
+
+function closeToc() {
+  const drawer = document.getElementById('toc-drawer')
+  const toggle = document.getElementById('toc-toggle')
+  const panel = document.getElementById('toc-panel')
+  const mask = document.getElementById('toc-mask')
+  if (!drawer || !toggle || !panel || !mask || drawer.style.display === 'none')
+    return
+  toggle.setAttribute('aria-expanded', 'false')
+  drawer.setAttribute('aria-hidden', 'true')
+  panel.classList.add('translate-x-full')
+  mask.classList.add('opacity-0')
+  setTimeout(() => {
+    drawer.style.display = 'none'
+  }, 200)
+}
+
+function injectHeadingAnchors() {
+  document.querySelectorAll<HTMLElement>('.prose h2, .prose h3').forEach((heading) => {
+    if (!heading.id || heading.querySelector('.heading-anchor'))
+      return
+    const a = document.createElement('a')
+    a.className = 'heading-anchor'
+    a.href = `#${heading.id}`
+    a.setAttribute('aria-hidden', 'true')
+    a.textContent = '#'
+    heading.append(a)
+  })
+}
+
+// Flash the heading's background briefly (three blinks) when its TOC entry
+// is explicitly clicked — not during passive scroll tracking.
+function flashHeading(heading: HTMLElement) {
+  heading.classList.remove('heading-active')
+  void heading.offsetWidth // restart the animation
+  heading.classList.add('heading-active')
+  heading.addEventListener('animationend', () => heading.classList.remove('heading-active'), { once: true })
+}
+
+// Delegated so the handlers survive client-side navigation (the button and
+// drawer elements are replaced on every page swap).
+document.addEventListener('click', (event) => {
+  const target = event.target
+  if (!(target instanceof Element))
+    return
+  if (target.closest('#toc-toggle')) {
+    const drawer = document.getElementById('toc-drawer')
+    if (drawer && drawer.style.display !== 'none')
+      closeToc()
+    else
+      openToc()
+  }
+  else if (target.closest('#toc-mask') || target.closest('#toc-close')) {
+    closeToc()
+  }
+  else {
+    const link = target.closest<HTMLAnchorElement>('#toc a, #toc-drawer a')
+    if (link) {
+      const id = decodeURIComponent(link.hash.slice(1))
+      const heading = document.getElementById(id)
+      if (heading)
+        flashHeading(heading)
+      if (target.closest('#toc-drawer a'))
+        closeToc()
+    }
+  }
+})
+
+// When the page was opened at (or navigated to) a URL with a hash, flash the
+// target heading — but only once the scroll has actually reached it, so the
+// blink lands after the smooth scroll settles rather than at load time.
+function flashHashHeading() {
+  const hash = location.hash
+  if (!hash)
+    return
+  const id = decodeURIComponent(hash.slice(1))
+  const heading = document.getElementById(id)
+  if (!heading)
+    return
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some(e => e.isIntersecting)) {
+      flashHeading(heading)
+      observer.disconnect()
+    }
+  }, { rootMargin: '-72px 0px -50% 0px' })
+  observer.observe(heading)
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape')
+    closeToc()
+})
+
 document.addEventListener('astro:page-load', () => {
+  buildToc()
+  injectHeadingAnchors()
+  flashHashHeading()
   const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en'
   const { copy, copied } = labels[lang]
   for (const pre of document.querySelectorAll<HTMLElement>('.prose pre.astro-code')) {

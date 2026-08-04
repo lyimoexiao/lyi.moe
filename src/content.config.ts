@@ -14,6 +14,8 @@ const blog = defineCollection({
       pubDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       heroImage: z.optional(image()),
+      // Displayed on the blog list; omit to hide it.
+      category: z.string().optional(),
       // Show a CC license notice at the top of the post. Set `license: false` to hide it.
       license: z.boolean().default(true),
     }),

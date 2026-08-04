@@ -263,3 +263,116 @@ html.dark .prose img {
 .copy-btn:focus-visible {
   opacity: 1;
 }
+
+/* ---------- Heading anchors + table of contents ---------- */
+
+/* Keep anchored headings clear of the sticky site header on jump. */
+.prose :is(h2, h3, h4, h5, h6) {
+  scroll-margin-top: 5.5rem;
+}
+
+/* When a TOC item becomes active, the heading's background blinks three
+   times to point the reader at the current section. */
+.heading-active {
+  animation: heading-flash 0.9s ease-in-out;
+}
+@keyframes heading-flash {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  10% {
+    background-color: var(--c-accent-soft);
+  }
+  20% {
+    background-color: transparent;
+  }
+  40% {
+    background-color: var(--c-accent-soft);
+  }
+  50% {
+    background-color: transparent;
+  }
+  70% {
+    background-color: var(--c-accent-soft);
+  }
+  80% {
+    background-color: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heading-active {
+    animation: none;
+  }
+}
+
+.heading-anchor {
+  margin-inline-start: 0.3em;
+  color: var(--c-text-3);
+  opacity: 0;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.prose :is(h2, h3):hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+.heading-anchor:hover {
+  color: var(--c-accent-text);
+}
+
+.toc {
+  position: relative;
+  padding-inline-start: 1rem;
+}
+/* Vertical track the active pill rides on. */
+.toc::before {
+  content: '';
+  position: absolute;
+  inset-block: 0.3rem;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 1rem;
+  background-color: var(--c-bg-3);
+}
+.toc li {
+  opacity: 0.6;
+  font-size: 0.94em;
+  transition: opacity 0.2s;
+}
+.toc li:hover {
+  opacity: 0.94;
+}
+.toc li.active,
+.toc li.has-active {
+  opacity: 1;
+  font-size: 1em;
+}
+/* Active pill, aligned with the track via the .toc positioning context. */
+.toc li.active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  margin: 0.2rem 0;
+  padding: 0.55rem 1.5px;
+  border-radius: 1rem;
+  background-color: var(--c-accent);
+}
+.toc li.toc-sub {
+  padding-inline-start: 0.9rem;
+}
+.toc a {
+  display: block;
+  overflow: hidden;
+  padding: 0.2em 0.5em;
+  border-radius: 0.5em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--c-text-1);
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.toc a:hover {
+  background-color: var(--c-bg-3);
+}

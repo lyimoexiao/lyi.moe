@@ -49,14 +49,14 @@ export const siteConfig = {
     },
     {
       name: 'Bilibili',
-      href: 'https://space.bilibili.com/<UID>', // TODO: 替换为你的 Bilibili UID
+      href: 'https://space.bilibili.com/29202562', // 替换为你的 Bilibili UID
       icon: 'i-ri-bilibili-fill',
       hoverColor: 'hover:color-[#FB7299]', // Bilibili pink
       hoverBg: 'hover:bg-[#FB7299]/12',
     },
     {
       name: '网易云音乐',
-      href: 'https://music.163.com/user/home?id=<ID>', // TODO: 替换为你的网易云音乐 ID
+      href: 'https://music.163.com/user/home?id=295726463', // 替换为你的网易云音乐 ID
       icon: 'i-ri-netease-cloud-music-line',
       hoverColor: 'hover:color-[#C20C0C]', // NetEase Cloud Music red
       hoverBg: 'hover:bg-[#C20C0C]/12',

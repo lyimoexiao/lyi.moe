@@ -1,6 +1,7 @@
 @media (prefers-reduced-motion: reduce) {
   html {
     transition: none;
+    scroll-behavior: auto;
   }
   ::view-transition-old(*),
   ::view-transition-new(*) {
@@ -10,6 +11,7 @@
 
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
   background-color: var(--c-bg);
   color: var(--c-text-1);
   -webkit-font-smoothing: antialiased;
@@ -66,4 +68,57 @@ h4 {
 
 ::selection {
   background: var(--c-accent-soft);
+}
+
+/* ---------- Scrollbars ---------- */
+
+/* Thin, theme-tinted scrollbars everywhere (Windows' default ones are
+   jarring against the site palette). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--c-text-3) 55%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Inset pill: the background is clipped to the content box inside the
+   transparent border, leaving a thin rounded bar with a gap on each side. */
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--c-text-3) 55%, transparent);
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-3);
+}
+
+/* The TOC bars stay hidden until the list itself is hovered. */
+#toc,
+#toc-drawer-list {
+  scrollbar-color: transparent transparent;
+}
+#toc:hover,
+#toc-drawer-list:hover {
+  scrollbar-color: color-mix(in srgb, var(--c-text-3) 55%, transparent) transparent;
+}
+#toc::-webkit-scrollbar-thumb,
+#toc-drawer-list::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+#toc:hover::-webkit-scrollbar-thumb,
+#toc-drawer-list:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--c-text-3) 55%, transparent);
+}
+#toc:hover::-webkit-scrollbar-thumb:hover,
+#toc-drawer-list:hover::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-3);
 }

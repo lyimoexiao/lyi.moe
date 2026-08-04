@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import BaseHead from '../../../components/BaseHead.astro'
 import Footer from '../../../components/Footer.astro'
@@ -7,11 +8,12 @@ import Header from '../../../components/Header.astro'
 import { siteDescription, siteTitle } from '../../../config'
 import { getLocale, useTranslations } from '../../../i18n/ui'
 import { getPosts } from '../../../lib/posts'
+import { countWords } from '../../../lib/reading-time'
 
 const locale = getLocale(Astro.currentLocale)
 const t = useTranslations(locale)
 const prefix = `${locale}/`
-const posts = await getPosts(locale)
+const posts = (await getPosts(locale)).map(post => ({ ...post, words: countWords(post.body ?? '') }))
 ---
 
 <!doctype html>
@@ -26,7 +28,7 @@ const posts = await getPosts(locale)
 				<div class="flex items-center justify-between">
 					<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('blog.title')}</h1>
 					<a
-  href={getRelativeLocaleUrl(locale, 'rss.xml').replace(/\/$/, '')}
+  href={getRelativeLocaleUrl(locale, 'rss.xml')}
   class="rounded op-fade inline-flex h-10 w-10 tap-scale transition-colors items-center justify-center hover:color-[#fbbf24] hover:bg-[#fbbf24]/12 hover:op100"
   aria-label={t('rss.feed')}
   title={t('rss.feed')}
@@ -47,17 +49,51 @@ const posts = await getPosts(locale)
 									<li>
 										<a
   href={getRelativeLocaleUrl(locale, `blog/${post.id.slice(prefix.length)}`)}
-  class="group px-2 py-2 rounded flex gap-4 items-baseline justify-between -mx-2"
+  class="group py-4 block relative"
 										>
-											<span class="flex gap-1 items-center">
-												<span class="transition-colors group-hover:color-active">
+											{
+												post.data.heroImage && (
+													<Image
+  src={post.data.heroImage}
+  alt=""
+  width={800}
+  height={400}
+  loading="eager"
+  class="mb-[-6%] rounded-lg opacity-80 w-full aspect-[2.4] transition-opacity [mask-image:linear-gradient(#fff_50%,transparent)] relative object-cover sm:mb-0 sm:rounded-none group-hover:opacity-100 sm:h-full sm:w-[40%] sm:aspect-auto sm:[mask-image:linear-gradient(to_right,transparent,#fff_50%)] sm:inset-y-0 sm:right-0 sm:absolute"
+													/>
+												)
+											}
+											<article class="relative sm:w-[60%]">
+												<h2 class="font-title text-lg tracking-tight font-550 transition-colors group-hover:color-active">
 													{post.data.title}
-												</span>
-												<span class="i-ph-arrow-up-right text-sm opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
-											</span>
-											<FormattedDate date={post.data.pubDate} />
+												</h2>
+												{
+													post.data.description && (
+														<p class="text-sm color-c-text-2 mt-1.5">
+															{post.data.description}
+														</p>
+													)
+												}
+												<div class="text-xs color-c-text-2 mt-2 flex flex-wrap gap-x-4 gap-y-1 items-center">
+													<FormattedDate date={post.data.pubDate} />
+													{
+														post.data.category && (
+															<span class="color-active inline-flex gap-1 items-center">
+																<span class="i-ph-folder-open" />
+																{post.data.category}
+															</span>
+														)
+													}
+													<span class="inline-flex gap-1 items-center">
+														<span class="i-ph-text-t" />
+														{post.words.toLocaleString()} {t('post.words')}
+													</span>
+												</div>
+											</article>
 										</a>
 									</li>
+
+
 								))
 							}
 						</ul>
