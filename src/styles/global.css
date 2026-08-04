@@ -6,8 +6,9 @@
 */
 
 /*
-  Alimama FangYuanTi VF (阿里妈妈方圆体) — variable font for the home
-  title and nav links. Subset into latin + cjk slices by
+  Alimama FangYuanTi VF (阿里妈妈方圆体) — variable font for page main
+  titles (`h1.font-title`), the header site title, and nav links. Subset into
+  latin + cjk slices by
   scripts/subset-alimama-font.sh (license: public/fonts/alimama-fangyuanti/LICENSE.txt).
   Axes: wght 200–700, BEVL 1–100. Each @font-face lists the legacy
   `format('woff2-variations')` plus a plain `format('woff2')` source so the

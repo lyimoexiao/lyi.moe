@@ -11,7 +11,8 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 ## Fonts
 
 - **Alimama FangYuanTi VF** (阿里妈妈方圆体可变字体) is used for the home
-  title (`h1.font-title`), the header site title, and all nav links. Subsets
+  title and all page main titles (`h1.font-title`), the header site title,
+  and all nav links. Subsets
   live in `public/fonts/alimama-fangyuanti/` and are regenerated with
   `scripts/subset-alimama-font.sh <source.ttf>` (needs `uv`).
 - The font has two variable axes: `wght` 200–700 and `BEVL` 1–100 (bevel).

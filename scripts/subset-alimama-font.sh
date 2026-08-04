@@ -26,8 +26,9 @@ SRC="${1:?usage: subset-alimama-font.sh <source font file (ttf/woff2)>}"
 OUT="public/fonts/alimama-fangyuanti"
 NAME="AlimamaFangYuanTiVF"
 
-# Han characters used by the home title (依如初梦) and the nav links
-# (首页 / 博客 / 友链 / 关于 / 文章 / 中). Extend when copy changes.
+# Han characters used by the home title (依如初梦), the page main titles
+# (博客 / 友链 / 关于), and the nav links (首页 / 博客 / 友链 / 关于 / 文章 / 中).
+# Extend when copy changes.
 TEXT_CJK='依如初梦首页博客友链关于文中'
 
 mkdir -p "$OUT"

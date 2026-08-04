@@ -23,7 +23,7 @@ const posts = await getPosts(locale)
 		<main class="px-4 py-16 sm:px-6">
 			<div class="mx-auto max-w-3xl">
 				<div class="flex items-center justify-between">
-					<h1 class="text-3xl tracking-tight font-700 text-balance">{t('blog.title')}</h1>
+					<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('blog.title')}</h1>
 					<a
   href={getRelativeLocaleUrl(locale, 'rss.xml').replace(/\/$/, '')}
   class="btn-icon tap-scale"
