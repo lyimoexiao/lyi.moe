@@ -1,0 +1,100 @@
+---
+// Friend avatar / favicon with a loading shimmer and an error fallback icon.
+//
+// The image is laid over a shimmering placeholder; once it loads the shimmer
+// is faded out. If the image fails (dead URL — friend avatars are remote and
+// can go stale), it is hidden and a broken-image icon is shown instead.
+//
+// Sizing/rounding live on `wrapClass` (the wrapper is overflow-hidden and
+// crops the image), so `imgClass` should only carry non-geometric tweaks.
+// High-DPI displays are handled automatically: the component emits a density
+// srcset (1x/2x/3x) so the browser picks the sharpest variant for the device.
+import type { ImageMetadata } from 'astro'
+import { Image } from 'astro:assets'
+
+interface Props {
+  src: string | ImageMetadata
+  alt: string
+  width: number
+  height: number
+  /** Applied to the outer wrapper: size, rounding, outline, opacity. */
+  wrapClass?: string
+  /** Applied to the <img> (non-geometric extras). */
+  imgClass?: string
+  /** Iconify class shown when the image fails to load. */
+  fallback?: string
+  /** Emitted srcset densities for automatic high-DPI adaptation. */
+  densities?: number[]
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  wrapClass = '',
+  imgClass = '',
+  fallback = 'i-ph-image-broken',
+  densities = [1, 2, 3],
+} = Astro.props
+
+// Fallback icon sized relative to the box (50% of width → ~60% with a 1.2 em
+// presetIcons scale).
+const fallbackFontSize = `${Math.max(7, Math.round(width * 0.5))}px`
+---
+
+<span class:list={['relative block overflow-hidden', wrapClass]} data-fi>
+	<Image
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  densities={densities}
+  loading="eager"
+  class:list={['fi-hide absolute inset-0 z-1 h-full w-full object-cover', imgClass]}
+  data-fi-img
+	/>
+	<span class="fi-shimmer" aria-hidden="true" />
+	<span class="fi-fallback fi-hide" aria-hidden="true" style={`font-size:${fallbackFontSize}`}>
+		<span class={fallback} />
+	</span>
+</span>
+<noscript><style is:inline>[data-fi-img]{opacity:1 !important;visibility:visible !important}</style></noscript>
+
+<script>
+// Reveal the image on load; swap in the fallback icon on error. Runs once per
+// document and re-scans on client-side navigation (astro:page-load), guarded
+// per wrapper with a data flag so swapped-in nodes are initialized exactly once.
+;(() => {
+  const init = (wrap) => {
+    if (wrap.dataset.fiInit)
+      return
+    wrap.dataset.fiInit = '1'
+    const img = wrap.querySelector('[data-fi-img]')
+    const shimmer = wrap.querySelector('.fi-shimmer')
+    const fb = wrap.querySelector('.fi-fallback')
+    // Hold the image until it is fully loaded so a partially-decoded image
+    // never flashes on top of the shimmer placeholder; without JS the img
+    // is never hidden and just shows normally when it finishes loading.
+    img?.classList.add('fi-hide')
+    const reveal = () => {
+      img?.classList.remove('fi-hide')
+      shimmer?.classList.add('fi-hide')
+      fb?.classList.add('fi-hide')
+    }
+    const fail = () => {
+      img?.classList.add('fi-hide')
+      shimmer?.classList.add('fi-hide')
+      fb?.classList.remove('fi-hide')
+    }
+    img?.addEventListener('load', reveal)
+    img?.addEventListener('error', fail)
+    // Handle images already complete (cached) by the time the script runs.
+    if (img?.complete)
+      img.naturalWidth > 0 ? reveal() : fail()
+  }
+  const scan = () => document.querySelectorAll('[data-fi]').forEach(init)
+  document.addEventListener('astro:page-load', scan)
+  scan()
+})()
+</script>

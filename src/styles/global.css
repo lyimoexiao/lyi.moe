@@ -517,3 +517,45 @@ html.dark .prose img {
 .copy-btn:focus-visible {
   opacity: 1;
 }
+
+/* ---------- Friend avatar/favicon: loading shimmer + error fallback ---------- */
+
+.fi-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--c-bg-3) 75%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: fi-shimmer 1.5s linear infinite;
+}
+
+@keyframes fi-shimmer {
+  from { background-position: 130% 0; }
+  to { background-position: -70% 0; }
+}
+
+.fi-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  background: var(--c-bg-3);
+  color: var(--c-text-3);
+}
+
+.fi-hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+[data-fi-img],
+.fi-shimmer,
+.fi-fallback {
+  transition: opacity 0.2s;
+}
