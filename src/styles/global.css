@@ -9,20 +9,29 @@
   Alimama FangYuanTi VF (阿里妈妈方圆体) — variable font for the home
   title and nav links. Subset into latin + cjk slices by
   scripts/subset-alimama-font.sh (license: public/fonts/alimama-fangyuanti/LICENSE.txt).
-  Axes: wght 200–700, BEVL 1–100. `format('woff2-variations')` keeps
-  browsers without variable-font support from downloading these files,
-  falling back to the system font stack below.
+  Axes: wght 200–700, BEVL 1–100. Each @font-face lists the legacy
+  `format('woff2-variations')` plus a plain `format('woff2')` source so the
+  font loads across engines regardless of variations-token support; browsers
+  without variable-font support won't vary it and text falls back to the
+  system font stack (see the @supports guards on .nav-link below).
 */
 @font-face {
   font-family: 'Alimama FangYuanTi VF';
-  src: url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2-variations');
+  src:
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2-variations'),
+    /* Fallback so engines that don't recognize the legacy `woff2-variations`
+       token (browser/version variance) still load the variable font via the
+       universally-supported plain `woff2` format. */
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2');
   font-weight: 200 700;
   font-display: swap;
   unicode-range: U+0020-00FF, U+2000-206F;
 }
 @font-face {
   font-family: 'Alimama FangYuanTi VF';
-  src: url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2-variations');
+  src:
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2-variations'),
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2');
   font-weight: 200 700;
   font-display: swap;
   unicode-range: U+3000-303F, U+4E00-9FFF;

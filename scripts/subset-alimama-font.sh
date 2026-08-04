@@ -32,21 +32,21 @@ TEXT_CJK='依如初梦首页博客友链关于文中'
 
 mkdir -p "$OUT"
 
-uv run --with fonttools --with brotli pyftsubset "$SRC" \
-  --flavor=woff2 \
-  --output-file="$OUT/$NAME-latin.woff2" \
-  --unicodes='U+0020-00FF,U+2000-206F' \
-  --layout-features='*' \
-  --name-IDs='*' --name-languages='*' --name-legacy \
-  --symbol-cmap --legacy-cmap --notdef-glyph --recommended-glyphs
+# --drop-tables+=STAT: subsetting leaves the font's STAT (style attributes)
+# table broken ("Axis index out of range"), which OTS (Chromium/Edge) rejects
+# with "Unable to instantiate font face from data". STAT only carries axis/UI
+# naming and is safe to drop for a webfont; the variable axes live in fvar/gvar.
+SUBSET_COMMON=(--flavor=woff2 --layout-features='*' --name-IDs='*' --name-languages='*' --name-legacy --symbol-cmap --legacy-cmap --notdef-glyph --recommended-glyphs --drop-tables+=STAT)
 
 uv run --with fonttools --with brotli pyftsubset "$SRC" \
-  --flavor=woff2 \
+  --output-file="$OUT/$NAME-latin.woff2" \
+  --unicodes='U+0020-00FF,U+2000-206F' \
+  "${SUBSET_COMMON[@]}"
+
+uv run --with fonttools --with brotli pyftsubset "$SRC" \
   --output-file="$OUT/$NAME-cjk.woff2" \
   --text="$TEXT_CJK" \
   --unicodes='U+3000-303F' \
-  --layout-features='*' \
-  --name-IDs='*' --name-languages='*' --name-legacy \
-  --symbol-cmap --legacy-cmap --notdef-glyph --recommended-glyphs
+  "${SUBSET_COMMON[@]}"
 
 ls -la "$OUT"
