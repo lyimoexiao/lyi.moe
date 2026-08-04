@@ -36,6 +36,22 @@
   font-display: swap;
   unicode-range: U+3000-303F, U+4E00-9FFF;
 }
+/*
+  JetBrains Mono — variable-width-wght monospace for code blocks and inline
+  code. Subset into a single latin slice by
+  scripts/subset-jetbrains-mono.sh (license: SIL OFL). Lists the legacy
+  `format('woff2-variations')` plus a plain `format('woff2')` source, same
+  fallback strategy as the Alimama face above.
+*/
+@font-face {
+  font-family: 'JetBrains Mono';
+  src:
+    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2-variations'),
+    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+  unicode-range: U+0020-00FF, U+2000-206F, U+2190-21FF, U+2300-23FF, U+25A0-25FF, U+27F0-27FF, U+2B00-2BFF;
+}
 
 .font-title,
 .nav-link {
@@ -50,24 +66,35 @@
     sans-serif;
 }
 
-/* Variable-font niceties for nav links on browsers that support them:
-   hover/active ramp the BEVL (bevel) axis — this font's signature depth
-   effect. wght stays fixed on purpose: it changes glyph advance widths and
-   would make nav items shift horizontally. Plain fallbacks elsewhere: the
-   existing opacity fade and static font-semibold. */
+/* Variable-font browsers (Alimama FangYuanTi VF): the base is a light 300
+   with a subtle BEVL bevel. The active state is a REAL wght bump (600) —
+   at nav's small size the bevel alone never reads as bold — with BEVL 55 on
+   top for the signature depth. font-weight is what actually bolds; the
+   font-variation-settings transition is deliberately left off so switching
+   the active link is a single clean step instead of a stuck/wobbling one. */
 @supports (font-variation-settings: normal) {
   .nav-link {
     font-weight: 300;
     font-variation-settings: 'BEVL' 1;
-    transition:
-      opacity 0.15s,
-      font-variation-settings 0.25s;
+    transition: opacity 0.15s;
   }
   .nav-link:hover {
     font-variation-settings: 'BEVL' 35;
   }
   .nav-link.font-semibold {
+    font-weight: 600;
     font-variation-settings: 'BEVL' 55;
+  }
+}
+
+/* Non-variable-font fallback: BEVL is a no-op, so the active state is
+   signaled with the same real font-weight instead (faux-bold if the loaded
+   face has no heavier static weight). The unguarded `.font-semibold`
+   (font-weight 600) already covers ancient browsers without @supports. */
+@supports not (font-variation-settings: normal) {
+  .nav-link.font-semibold {
+    font-weight: 600;
+    font-synthesis: weight;
   }
 }
 
@@ -75,6 +102,30 @@
   --hue: 220;
   --sat: 14%;
   --accent-hue: 201;
+
+  /* Serif token, kept as a reserved "story" variant (blog-v3's .md-story):
+     not applied to normal article body, which stays sans. Latin via Georgia,
+     CJK via system serif (Songti on macOS, SimSun on Windows, Noto Serif SC
+     on Linux) so no large CJK webfont has to ship. */
+  --font-serif:
+    Georgia,
+    'Times New Roman',
+    'Noto Serif SC',
+    'Songti SC',
+    'STSong',
+    'SimSun',
+    serif;
+
+  /* Code: JetBrains Mono (subset webfont) first, then a full system mono
+     fallback for any glyphs outside the subset. */
+  --font-mono:
+    'JetBrains Mono',
+    ui-monospace,
+    SFMono-Regular,
+    'Cascadia Code',
+    Consolas,
+    'Monaco',
+    monospace;
 
   /* Surfaces */
   --c-bg: hsl(var(--hue) var(--sat) 99%);
@@ -142,6 +193,7 @@ html {
   color: var(--c-text-1);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  text-autospace: normal;
   transition:
     background-color 0.3s,
     color 0.3s;
@@ -211,24 +263,41 @@ h4 {
   margin-bottom: 0;
 }
 
+/* Article headings use the site's display font (Alimama) like blog-v3's
+   --font-creative headings. Latin heading glyphs render in Alimama; CJK
+   glyphs outside the subset fall back per-character to the sans stack. */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family:
+    'Alimama FangYuanTi VF',
+    var(--font-atkinson),
+    'PingFang SC',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    sans-serif;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  margin: 1.6em 0 0.8em;
+}
+
 .prose h1,
 .prose h2 {
   font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin: 2.5em 0 0.75em;
 }
 
 .prose h3 {
   font-size: 1.125rem;
-  font-weight: 700;
-  margin: 2em 0 0.6em;
 }
 
-.prose h4 {
+.prose h4,
+.prose h5,
+.prose h6 {
   font-size: 1rem;
-  font-weight: 700;
-  margin: 1.75em 0 0.5em;
 }
 
 .prose p {
@@ -301,7 +370,8 @@ h4 {
 }
 
 .prose code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
+  text-autospace: no-autospace;
   font-size: 0.875em;
   background: var(--c-bg-3);
   border-radius: 4px;
@@ -349,7 +419,7 @@ html.dark .prose pre.astro-code span {
   width: var(--code-gutter);
   padding-inline-end: 1em;
   text-align: end;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   background-color: var(--c-bg-2);
   color: var(--c-text-3);
   z-index: 1;
@@ -361,7 +431,7 @@ html.dark .prose pre.astro-code span {
   position: absolute;
   top: 0.4rem;
   right: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
