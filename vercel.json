@@ -31,11 +31,11 @@
         "cache-control": "public, max-age=300"
       }
     },
+    { "handle": "error" },
     {
-      "handle": "error",
-      "statusCode": 404,
       "src": "^/en(/.*)?$",
-      "dest": "/en/404/index.html"
+      "dest": "/en/404/index.html",
+      "status": 404
     }
   ]
 }
