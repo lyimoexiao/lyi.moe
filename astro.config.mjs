@@ -6,7 +6,7 @@ import unoCSS from '@unocss/astro'
 import { defineConfig, fontProviders } from 'astro/config'
 
 // Syntax highlighting themes derived from the global palette in
-// src/styles/global.css: one neutral hue (220) plus the accent hue (201).
+// src/styles/theme.css: one neutral hue (220) plus the accent hue (201).
 function codeTheme(mode) {
   const light = mode === 'light'
   return {

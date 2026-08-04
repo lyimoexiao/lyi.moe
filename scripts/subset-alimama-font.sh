@@ -3,8 +3,8 @@
 #
 #   scripts/subset-alimama-font.sh /path/to/AlimamaFangYuanTiVF-Thin.ttf
 #
-# Splits the original variable font into two slices (global.css has the
-# matching @font-face + unicode-range declarations):
+# Splits the original variable font into two slices (src/styles/fonts.css has
+# the matching @font-face + unicode-range declarations):
 #   - latin.woff2: ASCII + Latin-1 + common punctuation (U+0020-00FF, U+2000-206F)
 #   - cjk.woff2:   nav link copy + CJK punctuation (U+3000-303F)
 #

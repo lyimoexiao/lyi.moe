@@ -1,0 +1,71 @@
+/*
+  Global theme. One neutral hue drives every surface and text color via
+  HSL, plus an accent hue for links and highlights. Dark values are swapped
+  in html.dark, so components reference --c-* variables instead of
+  hardcoded colors.
+*/
+
+:root {
+  --hue: 220;
+  --sat: 14%;
+  --accent-hue: 201;
+
+  /* Serif token, kept as a reserved "story" variant (blog-v3's .md-story):
+     not applied to normal article body, which stays sans. Latin via Georgia,
+     CJK via system serif (Songti on macOS, SimSun on Windows, Noto Serif SC
+     on Linux) so no large CJK webfont has to ship. */
+  --font-serif: Georgia, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+
+  /* Code: JetBrains Mono (subset webfont) first, then a full system mono
+     fallback for any glyphs outside the subset. */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, 'Monaco', monospace;
+
+  /* Surfaces */
+  --c-bg: hsl(var(--hue) var(--sat) 99%);
+  --c-bg-2: hsl(var(--hue) var(--sat) 95%);
+  --c-bg-3: hsl(var(--hue) var(--sat) 91%);
+  --c-nav: hsl(var(--hue) var(--sat) 99% / 80%);
+
+  /* Text */
+  --c-text-1: hsl(var(--hue) 22% 13%);
+  --c-text-2: hsl(var(--hue) 14% 38%);
+  --c-text-3: hsl(var(--hue) 12% 52%);
+
+  /* Borders */
+  --c-border: hsl(var(--hue) var(--sat) 88%);
+
+  /* Accent */
+  --c-accent: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-text: hsl(var(--accent-hue) 82% 42%);
+  --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 6%);
+
+  --c-ok: hsl(145 55% 32%);
+}
+
+html.dark {
+  --c-bg: hsl(var(--hue) 12% 7%);
+  --c-bg-2: hsl(var(--hue) 12% 11%);
+  --c-bg-3: hsl(var(--hue) 12% 15%);
+  --c-nav: hsl(var(--hue) 12% 7% / 80%);
+
+  --c-text-1: hsl(var(--hue) 15% 92%);
+  --c-text-2: hsl(var(--hue) 10% 68%);
+  --c-text-3: hsl(var(--hue) 8% 46%);
+
+  --c-border: hsl(var(--hue) 10% 17%);
+
+  --c-accent: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-text: hsl(var(--accent-hue) 100% 70%);
+  --c-accent-soft: hsl(var(--accent-hue) 100% 70% / 8%);
+
+  --c-ok: hsl(145 60% 62%);
+}
+
+/* Fallback when JS is disabled: follow the OS preference. */
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    color-scheme: dark;
+    background-color: hsl(var(--hue) 12% 7%);
+    color: hsl(var(--hue) 15% 92%);
+  }
+}

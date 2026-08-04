@@ -1,0 +1,69 @@
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition: none;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+html {
+  color-scheme: light;
+  background-color: var(--c-bg);
+  color: var(--c-text-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-autospace: normal;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.bg-tinted {
+  color: hsl(var(--bg-h, var(--hue)) 22% 13%);
+  transition: color 0.3s;
+}
+html.dark .bg-tinted {
+  color: hsl(var(--bg-h, var(--hue)) 15% 92%);
+}
+
+html.dark {
+  color-scheme: dark;
+  background-color: var(--c-bg);
+  color: var(--c-text-1);
+}
+
+body {
+  /* Atkinson covers Latin; CJK falls through to the explicit Chinese
+     fonts (PingFang on macOS, YaHei on Windows, Noto elsewhere). */
+  font-family:
+    var(--font-atkinson),
+    'PingFang SC',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* Push the footer past the viewport: the content fills the screen minus
+   the fixed header height, so the footer only shows on scroll. */
+main {
+  min-height: calc(100dvh - 3.5rem);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--c-accent-soft);
+}

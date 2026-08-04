@@ -1,0 +1,93 @@
+/*
+  Alimama FangYuanTi VF (阿里妈妈方圆体) — variable font for page main
+  titles (`h1.font-title`), the header site title, and nav links. Subset into
+  latin + cjk slices by
+  scripts/subset-alimama-font.sh (license: public/fonts/alimama-fangyuanti/LICENSE.txt).
+  Axes: wght 200–700, BEVL 1–100. Each @font-face lists the legacy
+  `format('woff2-variations')` plus a plain `format('woff2')` source so the
+  font loads across engines regardless of variations-token support; browsers
+  without variable-font support won't vary it and text falls back to the
+  system font stack (see the @supports guards on .nav-link below).
+*/
+@font-face {
+  font-family: 'Alimama FangYuanTi VF';
+  src:
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2-variations'),
+    /* Fallback so engines that don't recognize the legacy `woff2-variations`
+       token (browser/version variance) still load the variable font via the
+       universally-supported plain `woff2` format. */
+      url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2') format('woff2');
+  font-weight: 200 700;
+  font-display: swap;
+  unicode-range: U+0020-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Alimama FangYuanTi VF';
+  src:
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2-variations'),
+    url('/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2') format('woff2');
+  font-weight: 200 700;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+4E00-9FFF;
+}
+/*
+  JetBrains Mono — variable-width-wght monospace for code blocks and inline
+  code. Subset into a single latin slice by
+  scripts/subset-jetbrains-mono.sh (license: SIL OFL). Lists the legacy
+  `format('woff2-variations')` plus a plain `format('woff2')` source, same
+  fallback strategy as the Alimama face above.
+*/
+@font-face {
+  font-family: 'JetBrains Mono';
+  src:
+    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2-variations'),
+    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+  unicode-range: U+0020-00FF, U+2000-206F, U+2190-21FF, U+2300-23FF, U+25A0-25FF, U+27F0-27FF, U+2B00-2BFF;
+}
+
+.font-title,
+.nav-link {
+  font-family:
+    'Alimama FangYuanTi VF',
+    var(--font-atkinson),
+    'PingFang SC',
+    'Noto Sans SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Variable-font browsers (Alimama FangYuanTi VF): the base is a light 300
+   with a subtle BEVL bevel. The active state is a REAL wght bump (600) —
+   at nav's small size the bevel alone never reads as bold — with BEVL 55 on
+   top for the signature depth. font-weight is what actually bolds; the
+   font-variation-settings transition is deliberately left off so switching
+   the active link is a single clean step instead of a stuck/wobbling one. */
+@supports (font-variation-settings: normal) {
+  .nav-link {
+    font-weight: 300;
+    font-variation-settings: 'BEVL' 1;
+    transition: opacity 0.15s;
+  }
+  .nav-link:hover {
+    font-variation-settings: 'BEVL' 35;
+  }
+  .nav-link.font-semibold {
+    font-weight: 600;
+    font-variation-settings: 'BEVL' 55;
+  }
+}
+
+/* Non-variable-font fallback: BEVL is a no-op, so the active state is
+   signaled with the same real font-weight instead (faux-bold if the loaded
+   face has no heavier static weight). The unguarded `.font-semibold`
+   (font-weight 600) already covers ancient browsers without @supports. */
+@supports not (font-variation-settings: normal) {
+  .nav-link.font-semibold {
+    font-weight: 600;
+    font-synthesis: weight;
+  }
+}

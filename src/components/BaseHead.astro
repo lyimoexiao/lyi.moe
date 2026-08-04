@@ -4,9 +4,13 @@ import { Font } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import { ClientRouter } from 'astro:transitions'
 import { getLocale, useTranslations } from '../i18n/ui'
-// Import the global.css file here so that it is included on
+// Import the stylesheets here so that they are included on
 // all pages through the use of the <BaseHead /> component.
-import '../styles/global.css'
+import '../styles/fonts.css'
+import '../styles/theme.css'
+import '../styles/base.css'
+import '../styles/prose.css'
+import '../styles/friend-image.css'
 
 interface Props {
 	title: string

@@ -3,8 +3,8 @@
 #
 #   scripts/subset-jetbrains-mono.sh /path/to/JetBrainsMono[wght].ttf
 #
-# Splits the original variable font into a single latin slice (global.css has
-# the matching @font-face + unicode-range declaration):
+# Splits the original variable font into a single latin slice (src/styles/fonts.css
+# has the matching @font-face + unicode-range declaration):
 #   - latin.woff2: ASCII + Latin-1 + punctuation + common code symbols
 #     (U+0020-00FF, U+2000-206F, U+2190-21FF, U+2300-23FF, U+25A0-25FF,
 #      U+27F0-27FF, U+2B00-2BFF)
