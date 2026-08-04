@@ -1,8 +1,8 @@
 ---
-import { Image } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import avatar from '../assets/avatar.jpg'
 import { getLocale, useTranslations } from '../i18n/ui'
+import FriendImage from './FriendImage.astro'
 import HeaderLink from './HeaderLink.astro'
 import LoadingIndicator from './LoadingIndicator.astro'
 
@@ -37,13 +37,12 @@ const navLinks = [
   class="font-title tracking-tight font-300 flex items-center gap-2 transition-opacity hover:op80"
   title={t('site.title')}
 			>
-				<Image
+				<FriendImage
   src={avatar}
   alt=""
   width={28}
   height={28}
-  loading="eager"
-  class="img-outline rounded-full h-7 w-7"
+  wrapClass="img-outline rounded-full h-7 w-7"
 				/>
 				{t('site.title')}
 			</a>
