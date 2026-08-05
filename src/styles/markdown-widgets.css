@@ -1,0 +1,84 @@
+/*
+  Markdown 小组件：`code`{copy} 复制按钮 与 :tip[] 悬浮说明。
+  由 remark 插件（src/remark/）输出对应 class，全站文章与友链申请内容共用。
+*/
+
+:root {
+  --widget-copy-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23000' d='M216 32H88a8 8 0 0 0-8 8v40H40a8 8 0 0 0-8 8v128a8 8 0 0 0 8 8h128a8 8 0 0 0 8-8v-40h40a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8m-56 176H48V96h112Zm48-48h-32V88a8 8 0 0 0-8-8H96V48h112Z'/%3E%3C/svg%3E");
+  --widget-check-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23000' d='m229.66 77.66-128 128a8 8 0 0 1-11.32 0l-56-56a8 8 0 0 1 11.32-11.32L96 188.69 218.34 66.34a8 8 0 0 1 11.32 11.32'/%3E%3C/svg%3E");
+}
+
+/* 复制按钮：虚线描边 + 小图标；复制成功后图标切换为对勾 */
+.friend-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0 0.15em;
+  padding: 0;
+  border: none;
+  border-bottom: 1px dashed color-mix(in srgb, var(--c-accent-text) 45%, transparent);
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  color: var(--c-accent-text);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.friend-copy:hover {
+  opacity: 0.75;
+}
+
+.friend-copy::after {
+  content: '';
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  -webkit-mask: var(--widget-copy-icon) center / contain no-repeat;
+  mask: var(--widget-copy-icon) center / contain no-repeat;
+}
+
+.friend-copy.copied::after {
+  -webkit-mask: var(--widget-check-icon) center / contain no-repeat;
+  mask: var(--widget-check-icon) center / contain no-repeat;
+}
+
+/* :tip 标注：悬浮/聚焦时显示说明气泡，纯 CSS 实现 */
+.tip {
+  position: relative;
+  color: var(--c-text-1);
+  border-bottom: 1px dotted var(--c-text-3);
+  cursor: help;
+  outline: none;
+}
+
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.5rem);
+  z-index: 20;
+  width: max-content;
+  max-width: 17rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background-color: var(--c-bg-3);
+  color: var(--c-text-1);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(4px);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+
+.tip:hover::after,
+.tip:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

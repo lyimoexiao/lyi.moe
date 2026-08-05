@@ -12,6 +12,7 @@ import '../styles/theme.css'
 import '../styles/base.css'
 import '../styles/prose.css'
 import '../styles/friend-image.css'
+import '../styles/markdown-widgets.css'
 
 interface Props {
 	title: string
@@ -43,6 +44,78 @@ function applyTheme() {
 }
 document.addEventListener('astro:after-swap', applyTheme)
 applyTheme()
+</script>
+
+<script>
+// `code`{copy} 复制按钮：点击把 data-copy 文本写入剪贴板，成功后短暂显示对勾。
+// 无 Clipboard API（如非安全上下文）时回退 execCommand；View Transitions 换页后重新扫描。
+;(() => {
+  async function copyText(text: string) {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text)
+        return true
+      }
+      catch {
+        // 继续走 legacy 回退
+      }
+    }
+    const area = document.createElement('textarea')
+    area.value = text
+    area.style.position = 'fixed'
+    area.style.opacity = '0'
+    document.body.appendChild(area)
+    area.select()
+    let ok = false
+    try {
+      ok = document.execCommand('copy')
+    }
+    catch {
+      ok = false
+    }
+    area.remove()
+    return ok
+  }
+
+  const init = () => {
+    document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach((el) => {
+      if (el.dataset.copyInit)
+        return
+      el.dataset.copyInit = '1'
+      const text = el.dataset.copy ?? ''
+      const copiedLabel = document.documentElement.lang.startsWith('zh') ? '已复制' : 'Copied'
+      const originalLabel = el.getAttribute('aria-label') ?? ''
+      const flash = () => {
+        el.classList.add('copied')
+        el.setAttribute('aria-label', copiedLabel)
+        window.setTimeout(() => {
+          el.classList.remove('copied')
+          if (originalLabel)
+            el.setAttribute('aria-label', originalLabel)
+          else
+            el.removeAttribute('aria-label')
+        }, 1600)
+      }
+      el.addEventListener('click', async () => {
+        if (!text)
+          return
+        if (await copyText(text)) {
+          flash()
+        }
+        else {
+          // 剪贴板不可用：选中按钮文本，方便手动 Ctrl/Cmd+C
+          const range = document.createRange()
+          range.selectNodeContents(el)
+          const selection = getSelection()
+          selection?.removeAllRanges()
+          selection?.addRange(range)
+        }
+      })
+    })
+  }
+  document.addEventListener('astro:page-load', init)
+  init()
+})()
 </script>
 
 <!-- Global Metadata -->

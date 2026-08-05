@@ -21,4 +21,13 @@ const blog = defineCollection({
     }),
 })
 
-export const collections = { blog }
+const link = defineCollection({
+  // 友链页“申请友链”要求：src/content/link/apply-zh.md / apply-en.md
+  loader: glob({ base: './src/content/link', pattern: '**/*.{md,mdx}' }),
+  schema: z.object({
+    date: z.coerce.date(),
+    updated: z.coerce.date().optional(),
+  }),
+})
+
+export const collections = { blog, link }
