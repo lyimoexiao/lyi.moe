@@ -5,11 +5,15 @@ import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { brotliCompressSync, gzipSync, constants as zlibConstants } from 'node:zlib'
+import { unified } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import unoCSS from '@unocss/astro'
 import { defineConfig, fontProviders } from 'astro/config'
 import { minify as minifyHtml } from 'html-minifier-terser'
+import remarkDirective from 'remark-directive'
+import { remarkCopy } from './src/remark/copy.ts'
+import { remarkTip } from './src/remark/tip.ts'
 
 // Syntax highlighting themes derived from the global palette in
 // src/styles/theme.css: one neutral hue (220) plus the accent hue (201).
@@ -135,6 +139,11 @@ export default defineConfig({
     },
   },
   markdown: {
+    // `code`{copy} 与 :tip[文字]{tip="说明"}：全站 Markdown（含文章）可用，
+    // 对应 blog-v3 的 MDC 语法。remarkDirective 需先于 remarkTip 解析指令。
+    processor: unified({
+      remarkPlugins: [remarkDirective, remarkCopy, remarkTip],
+    }),
     shikiConfig: {
       themes: {
         light: codeTheme('light'),
