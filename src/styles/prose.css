@@ -206,6 +206,11 @@
   counter-reset: line;
 }
 
+/* blog-v3 同款：头部“自动换行”按钮切换长行是否换行 */
+.z-codeblock pre.wrap {
+  white-space: pre-wrap;
+}
+
 /* Override shiki's inline background and base color so the block matches
    the theme. Token colors keep their inline light values, and switch to
    the dark variants when the site theme class is active. */

@@ -68,7 +68,8 @@ applyTheme()
     area.select()
     let ok = false
     try {
-      ok = document.execCommand('copy')
+      // 仅回退路径使用：Clipboard API 不可用（如非安全上下文）时唯一方案，API 已废弃但无替代
+      ok = (document as unknown as { execCommand: (cmd: string) => boolean }).execCommand('copy')
     }
     catch {
       ok = false
@@ -129,6 +130,20 @@ applyTheme()
         continue
       block.dataset.copyBtn = 'true'
       const code = pre.querySelector('code')
+      const wrapLabel = lang === 'zh' ? '自动换行' : 'Wrap'
+      const scrollLabel = lang === 'zh' ? '横向滚动' : 'Scroll'
+      // blog-v3 同款：头部“自动换行/横向滚动”切换按钮
+      const wrapBtn = document.createElement('button')
+      wrapBtn.type = 'button'
+      wrapBtn.className = 'copy-btn'
+      wrapBtn.textContent = wrapLabel
+      wrapBtn.setAttribute('aria-pressed', 'false')
+      wrapBtn.addEventListener('click', () => {
+        const wrapped = pre.classList.toggle('wrap')
+        wrapBtn.textContent = wrapped ? scrollLabel : wrapLabel
+        wrapBtn.setAttribute('aria-pressed', String(wrapped))
+      })
+      operations.prepend(wrapBtn)
       const btn = document.createElement('button')
       btn.type = 'button'
       btn.className = 'copy-btn'
