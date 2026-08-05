@@ -13,9 +13,13 @@ interface Props {
 
 const { group } = Astro.props
 const locale = getLocale(Astro.currentLocale)
+const isEn = locale === 'en'
 const t = useTranslations(locale)
 const name = groupName(group, locale)
 const desc = groupDesc(group, locale)
+const shuffleHint = isEn
+  ? 'Click to shuffle the order; hold a modifier key and click to restore the original order'
+  : '点击随机排序，按住修饰键点击可取消随机排序'
 
 /** 与 blog-v3 相同的延迟算法：由链接 hash 得到 0–1s 的入场延迟。 */
 function cardDelay(link: string): string {
@@ -27,7 +31,11 @@ function cardDelay(link: string): string {
 ---
 
 <section class="feed-group">
-	<h2 class="feed-title">{name}</h2>
+	<h2 class="feed-title font-title">
+		<button type="button" class="feed-title-btn" data-shuffle title={shuffleHint} aria-label={shuffleHint}>
+			{name}
+		</button>
+	</h2>
 	{desc && <p class="feed-desc">{desc}</p>}
 	<ul class="feed-list">
 		{
@@ -40,7 +48,7 @@ function cardDelay(link: string): string {
   alt=""
   width={40}
   height={40}
-  wrapClass="feed-avatar"
+  wrapClass="img-outline rounded-full shrink-0 h-10 w-10 shadow-[0_2px_8px_rgb(0_0_0/12%)]"
 							/>
 							<span class="feed-card-body">
 								<span class="feed-card-author">{friend.author}</span>
@@ -80,6 +88,7 @@ function cardDelay(link: string): string {
     z-index: 1;
     margin-bottom: -0.3em;
     opacity: 0.55;
+    font-size: clamp(2.75rem, 10vw, 5rem);
     font-weight: 700;
     line-height: 1;
     text-align: left;
@@ -91,8 +100,20 @@ function cardDelay(link: string): string {
     transition: color 0.2s;
   }
 
-  .feed-title:hover {
+  .feed-title-btn {
+    all: unset;
+    cursor: pointer;
+  }
+
+  .feed-title:hover,
+  .feed-title-btn:focus-visible {
     color: var(--c-text-3);
+  }
+
+  .feed-title-btn:focus-visible {
+    border-radius: 6px;
+    outline: 2px dashed var(--c-text-3);
+    outline-offset: 6px;
   }
 
   .feed-title::selection {
@@ -140,14 +161,6 @@ function cardDelay(link: string): string {
     gap: 0.6em;
     min-width: 0;
     flex: 1;
-  }
-
-  .feed-avatar {
-    flex: none;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 9999px;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 
   .feed-card-body {
@@ -208,3 +221,34 @@ function cardDelay(link: string): string {
     }
   }
 </style>
+
+<script>
+// blog-v3 风格的随机排序：点击标题随机打乱卡片；按住修饰键点击恢复原始顺序。
+// View Transitions 换页后会重新扫描新文档中的按钮，每个标题只初始化一次。
+;(() => {
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-shuffle]').forEach((btn) => {
+      if (btn.dataset.shuffleInit)
+        return
+      btn.dataset.shuffleInit = '1'
+      const list = btn.closest('.feed-group')?.querySelector('.feed-list')
+      if (!list)
+        return
+      const original = Array.from(list.children)
+      btn.addEventListener('click', (event) => {
+        if (event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
+          original.forEach(item => list.appendChild(item))
+          return
+        }
+        const items = Array.from(list.children)
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          list.appendChild(items[j])
+        }
+      })
+    })
+  }
+  document.addEventListener('astro:page-load', init)
+  init()
+})()
+</script>
