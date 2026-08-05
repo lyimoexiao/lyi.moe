@@ -3,6 +3,9 @@ dist/
 # generated types
 .astro/
 
+# font sources (licensed, not redistributable — see scripts/subset-fonts.sh)
+fonts-src/
+
 # dependencies
 node_modules/
 

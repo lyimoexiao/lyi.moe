@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Regenerate the JetBrains Mono subset used by the site's code blocks.
 #
-#   scripts/subset-jetbrains-mono.sh /path/to/JetBrainsMono[wght].ttf
+#   scripts/subset-jetbrains-mono.sh [source font file (ttf)]
+#
+# With no argument, looks for fonts-src/JetBrainsMono[wght].ttf
+# (the gitignored source dir, populated by scripts/subset-fonts.sh).
 #
 # Splits the original variable font into a single latin slice (src/styles/fonts.css
 # has the matching @font-face + unicode-range declaration):
@@ -21,7 +24,7 @@
 
 set -euo pipefail
 
-SRC="${1:?usage: subset-jetbrains-mono.sh <source font file (ttf)>}"
+SRC="${1:-fonts-src/JetBrainsMono[wght].ttf}"
 OUT="src/assets/fonts/jetbrains-mono"
 NAME="JetBrainsMono"
 

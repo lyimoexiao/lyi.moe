@@ -78,22 +78,30 @@ complex responsive rules that would be unreadable as utility classes.
 
 ## Fonts
 
+All three webfont subsets regenerate automatically before `pnpm build` via
+`scripts/subset-fonts.sh` (the `prebuild` hook), from the gitignored
+`fonts-src/` directory. On deploy (Vercel) `fonts-src/` doesn't exist, so the
+hook exits immediately and the committed woff2 are used as-is — never make a
+deploy depend on subsetting. The Han character sets for Alimama/Douyin are
+derived from the site's own copy (config title, ui.ts strings, feed group
+names) — no hand-maintained character list. When `fonts-src/` is absent,
+regenerate the subsets with `scripts/subset-<font>.sh <source.ttf>` (needs
+`uv`).
+
 - **Alimama FangYuanTi VF** (阿里妈妈方圆体可变字体) is used for the home
   title and all page main titles (`h1.font-title`), the header site title,
   and all nav links. Subsets
   live in `public/fonts/alimama-fangyuanti/` and are regenerated with
-  `scripts/subset-alimama-font.sh <source.ttf>` (needs `uv`).
+  `scripts/subset-alimama-font.sh` (needs `uv`).
 - The font has two variable axes: `wght` 200–700 and `BEVL` 1–100 (bevel).
   Nav links sit at `wght 300`; hover ramps `BEVL` only, but the **active**
   link bolds via a real `wght` bump (600) plus `BEVL 55` — the bevel alone is
   too subtle to read as bold at nav size. A `@supports not` block falls the
   active state back to `font-weight: 600` on non-variable-font browsers.
-- Changing copy that renders through the font means extending `TEXT_CJK` in
-  the subset script and re-running it; missing characters fall back
-  per-character to the system CJK fonts.
+- Missing characters fall back per-character to the system CJK fonts.
 - **JetBrains Mono** is used for code blocks and inline code (`--font-mono`).
   The latin subset lives in `public/fonts/jetbrains-mono/` and is regenerated
-  with `scripts/subset-jetbrains-mono.sh <source.ttf>` (needs `uv`).
+  with `scripts/subset-jetbrains-mono.sh` (needs `uv`).
 - **Article body** stays sans (Atkinson + system CJK sans); `.prose` in-article
   headings use the Alimama display font (weight 550) like blog-v3's
   `--font-creative` headings. `--font-serif` is a reserved token for a future

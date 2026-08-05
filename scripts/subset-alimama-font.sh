@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Regenerate the Alimama FangYuanTi VF subsets used by the site.
 #
-#   scripts/subset-alimama-font.sh /path/to/AlimamaFangYuanTiVF-Thin.ttf
+#   scripts/subset-alimama-font.sh [source font file (ttf/woff2)]
+#
+# With no argument, looks for fonts-src/AlimamaFangYuanTiVF-Thin.ttf
+# (the gitignored source dir, populated by scripts/subset-fonts.sh).
 #
 # Splits the original variable font into two slices (src/styles/fonts.css has
 # the matching @font-face + unicode-range declarations):
@@ -22,14 +25,15 @@
 
 set -euo pipefail
 
-SRC="${1:?usage: subset-alimama-font.sh <source font file (ttf/woff2)>}"
+SRC="${1:-fonts-src/AlimamaFangYuanTiVF-Thin.ttf}"
 OUT="src/assets/fonts/alimama-fangyuanti"
 NAME="AlimamaFangYuanTiVF"
 
 # Han characters used by the home title (依如初梦), the page main titles
 # (博客 / 友链 / 关于), and the nav links (首页 / 博客 / 友链 / 关于 / 文章 / 中).
-# Extend when copy changes.
-TEXT_CJK='依如初梦首页博客友链关于文中'
+# Extend when copy changes. scripts/subset-fonts.sh overrides this with the
+# Han characters extracted from the site's own config/copy at build time.
+TEXT_CJK="${TEXT_CJK:-依如初梦首页博客友链关于文中}"
 
 mkdir -p "$OUT"
 

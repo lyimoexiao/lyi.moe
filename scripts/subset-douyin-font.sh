@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Regenerate the Douyin Sans Bold subsets used by the feed group titles.
 #
-#   scripts/subset-douyin-font.sh /path/to/DouyinSansBold.ttf
+#   scripts/subset-douyin-font.sh [source font file (ttf/woff2)]
+#
+# With no argument, looks for fonts-src/DouyinSansBold.ttf
+# (the gitignored source dir, populated by scripts/subset-fonts.sh).
 #
 # Splits the font into two slices (src/styles/fonts.css has the matching
 # @font-face + unicode-range declarations):
@@ -22,12 +25,14 @@
 
 set -euo pipefail
 
-SRC="${1:?usage: subset-douyin-font.sh <source font file (ttf/woff2)>}"
+SRC="${1:-fonts-src/DouyinSansBold.ttf}"
 OUT="src/assets/fonts/douyin-sans"
 NAME="DouyinSansBold"
 
-# Han characters used by the feed group titles (好友). Extend when copy changes.
-TEXT_CJK='好友'
+# Han characters used by the feed group titles (好友们, 邻居们). Extend when
+# copy changes. scripts/subset-fonts.sh overrides this with the Han characters
+# extracted from the site's own config/copy at build time.
+TEXT_CJK="${TEXT_CJK:-好友们邻居}"
 
 mkdir -p "$OUT"
 
