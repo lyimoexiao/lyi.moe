@@ -32,20 +32,91 @@ const first = siteConfig.quotes[0] ?? ''
 
 <script is:inline define:vars={{ quotes: siteConfig.quotes }}>
 const isHome = () => (location.pathname.replace(/^\/en/, '') || '/') === '/'
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+const TYPE_DELAY = 60
+const ERASE_DELAY = 28
 let timer = null
-function type(text) {
+
+const textEl = () => document.getElementById('type-quote-text')
+const cursorEl = () => document.querySelector('#type-quote .type-cursor')
+
+function playedOnce() {
+  // 仅用 window 标记：无缝路由时 window 保留 → 不重播；
+  // 整页刷新时 window 重置 → 重新播放。
+  return !!window.__typeQuotePlayed
+}
+
+function markPlayed() {
+  window.__typeQuotePlayed = true
+}
+
+function setCursor(visible) {
+  const cursor = cursorEl()
+  if (cursor)
+    cursor.style.display = visible ? '' : 'none'
+}
+
+function setText(text) {
+  const span = textEl()
+  if (span)
+    span.textContent = text
+}
+
+function remember(text) {
+  window.__typeQuoteLast = text
+}
+
+function type(text, done) {
   clearInterval(timer)
-  const span = document.getElementById('type-quote-text')
+  setCursor(true)
+  if (reduceMotion) {
+    setText(text)
+    remember(text)
+    done?.()
+    return
+  }
+  const span = textEl()
   if (!span)
     return
   span.textContent = ''
   let i = 0
   timer = setInterval(() => {
     span.textContent = text.slice(0, ++i)
-    if (i >= text.length)
+    if (i >= text.length) {
       clearInterval(timer)
-  }, 60)
+      remember(text)
+      done?.()
+    }
+  }, TYPE_DELAY)
 }
+
+// 快速删除当前一言（倒退打字），完成后回调以输入新一言。
+function erase(done) {
+  clearInterval(timer)
+  setCursor(true)
+  if (reduceMotion) {
+    setText('')
+    done?.()
+    return
+  }
+  const span = textEl()
+  if (!span)
+    return
+  const text = span.textContent
+  if (!text.length) {
+    done?.()
+    return
+  }
+  let i = text.length
+  timer = setInterval(() => {
+    span.textContent = text.slice(0, --i)
+    if (i <= 0) {
+      clearInterval(timer)
+      done?.()
+    }
+  }, ERASE_DELAY)
+}
+
 function pick(exclude) {
   if (quotes.length === 1)
     return quotes[0]
@@ -54,16 +125,66 @@ function pick(exclude) {
     q = quotes[Math.floor(Math.random() * quotes.length)]
   return q
 }
-document.addEventListener('click', (event) => {
+
+// 无缝路由回到首页：不重复播放打字机，静止显示上一句并隐藏光标。
+function restoreLast() {
+  const span = textEl()
+  if (!span)
+    return
+  let last
+  try {
+    last = sessionStorage.getItem('lyi:typeQuoteLast')
+  }
+  catch {}
+  last = last || window.__typeQuoteLast
+  if (last)
+    span.textContent = last
+  setCursor(false)
+}
+
+function onClickQuote(event) {
   const target = event.target
   if (target instanceof Element && target.closest('#type-quote')) {
-    const current = document.getElementById('type-quote-text')?.textContent ?? ''
-    type(pick(current))
+    const current = textEl()?.textContent ?? ''
+    const next = pick(current)
+    if (next === current)
+      return
+    // 先快速删除旧一言，再用打字机输入新一言
+    erase(() => type(next))
   }
-})
-document.addEventListener('astro:page-load', () => {
-  if (!isHome() || !quotes.length)
+}
+
+function onPageLoad() {
+  if (!isHome())
     return
-  type(pick())
-})
+  // 同一会话只播放一次；无缝路由从其他页面回到首页时保持静态。
+  if (playedOnce()) {
+    restoreLast()
+    return
+  }
+  markPlayed()
+  if (!quotes.length) {
+    quoteDone()
+    return
+  }
+  const current = textEl()?.textContent ?? ''
+  const next = pick(current)
+  if (next !== current)
+    type(next, quoteDone)
+  else
+    quoteDone()
+}
+
+// 首轮打字完成（或无需打字）后，通知首页展开下方内容。
+function quoteDone() {
+  window.dispatchEvent(new CustomEvent('lyi:quote-done'))
+}
+
+// 内联脚本每次进入首页都会执行一次，用全局标记避免重复注册监听器
+// （否则多次导航后点击会同时触发多套删除/打字序列）。
+if (!window.__typeQuoteBound) {
+  window.__typeQuoteBound = true
+  document.addEventListener('click', onClickQuote)
+  document.addEventListener('astro:page-load', onPageLoad)
+}
 </script>

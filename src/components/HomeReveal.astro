@@ -1,0 +1,104 @@
+---
+---
+
+<div id="home-reveal">
+	<slot />
+</div>
+
+<style>
+/* 让子元素边距始终参与容器内部布局（BFC），收起/展开动画中的高度与
+   自然布局高度完全一致，避免展开终点被裁切或回落。 */
+#home-reveal {
+  display: flow-root;
+}
+</style>
+
+<script is:inline>
+// 首页进入后，一言下方内容先收起为手风琴初始状态（高度 0）。
+// 内联脚本只在文档加载时执行（首帧防闪）；无缝导航回首页时不重新执行，
+// 因此回来时内容保持展开、不重复播放。
+const isHome = () => (location.pathname.replace(/^\/en/, '') || '/') === '/'
+const el = document.getElementById('home-reveal')
+if (el && isHome() && !matchMedia('(prefers-reduced-motion: reduce)').matches && !window.__homeRevealDone) {
+  el.style.height = '0px'
+  el.style.overflow = 'hidden'
+  el.style.opacity = '0'
+}
+</script>
+
+<script>
+import { animate } from 'animejs'
+
+declare global {
+  interface Window {
+    __homeRevealDone?: boolean
+  }
+}
+
+function isHome() {
+  return (location.pathname.replace(/^\/en/, '') || '/') === '/'
+}
+function reduceMotion() {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+function revealEl() {
+  return document.getElementById('home-reveal')
+}
+
+// 一言打字完成后停顿片刻，再以手风琴方式展开下方内容。
+const REVEAL_DELAY = 500
+const EXPAND_DURATION = 700
+
+async function expand() {
+  const el = revealEl()
+  if (!el || !isHome() || reduceMotion())
+    return
+  if (el.dataset.revealed === 'true')
+    return
+  el.dataset.revealed = 'true'
+  window.__homeRevealDone = true
+  // 内容已是展开态（例如无缝路由回来时）无需动画。
+  if (el.style.height !== '0px') {
+    el.style.height = ''
+    el.style.overflow = ''
+    el.style.opacity = ''
+    return
+  }
+  // 等字体就绪后再测量，保证展开终点与容器实际高度一致。
+  try {
+    await document.fonts.ready
+  }
+  catch {}
+  // 等待字体期间可能已导航离开/返回，元素被替换时直接放弃。
+  if (el !== revealEl() || !isHome())
+    return
+  // 收起时 overflow:hidden 会因 BFC 撑开子元素外边距，scrollHeight 会虚高；
+  // 先同步放开高度量取真实自然高度（期间 opacity 仍为 0，无可见闪烁），
+  // 再收回后开启动画，保证展开终点与 auto 高度完全一致。
+  const targetHeight = (() => {
+    const prevHeight = el.style.height
+    const prevOverflow = el.style.overflow
+    el.style.height = ''
+    el.style.overflow = ''
+    const h = el.offsetHeight
+    el.style.height = prevHeight
+    el.style.overflow = prevOverflow
+    return h
+  })()
+  animate(el, {
+    height: [0, targetHeight],
+    opacity: [0, 1],
+    duration: EXPAND_DURATION,
+    ease: 'outExpo',
+    onComplete: () => {
+      el.style.height = ''
+      el.style.overflow = ''
+      el.style.opacity = ''
+    },
+  })
+}
+
+window.addEventListener('lyi:quote-done', () => {
+  setTimeout(expand, REVEAL_DELAY)
+})
+</script>

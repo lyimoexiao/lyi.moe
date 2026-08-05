@@ -6,6 +6,7 @@ import BaseHead from '../../components/BaseHead.astro'
 import Footer from '../../components/Footer.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
 import Header from '../../components/Header.astro'
+import HomeReveal from '../../components/HomeReveal.astro'
 import RandomBackground from '../../components/RandomBackground.astro'
 import SocialLinks from '../../components/SocialLinks.astro'
 import TypeQuote from '../../components/TypeQuote.astro'
@@ -36,38 +37,41 @@ const posts = (await getPosts(locale)).slice(0, 3)
   height={160}
   loading="eager"
   class="img-outline rounded-full h-20 w-20"
+  data-hero-avatar
 	/>
-				<h1 class="font-title text-3xl tracking-tight font-300 mt-4 text-balance">{siteTitle(locale)}</h1>
+				<h1 class="font-title text-3xl tracking-tight font-300 mt-4 w-fit text-balance" data-hero-title>{siteTitle(locale)}</h1>
 				<TypeQuote />
-				<SocialLinks />
-				{
-					posts.length > 0 && (
-						<section>
-							<hr class="my-4 border-none h-px from-transparent to-transparent via-c-border bg-linear-to-r" />
-							<h2 class="text-lg font-600 mb-4">{t('home.latest')}</h2>
-							<ul class="flex flex-col">
-								{
-									posts.map(post => (
-										<li>
-											<a
+				<HomeReveal>
+					<SocialLinks />
+					{
+						posts.length > 0 && (
+							<section>
+								<hr class="my-4 border-none h-px from-transparent to-transparent via-c-border bg-linear-to-r" />
+								<h2 class="text-lg font-600 mb-4">{t('home.latest')}</h2>
+								<ul class="flex flex-col">
+									{
+										posts.map(post => (
+											<li>
+												<a
   href={getRelativeLocaleUrl(locale, `blog/${post.id.slice(prefix.length)}`)}
   class="group px-2 py-2 rounded flex gap-4 items-baseline justify-between -mx-2"
-											>
-												<span class="flex gap-1 items-center">
-													<span class="transition-colors group-hover:color-active">
-														{post.data.title}
+												>
+													<span class="flex gap-1 items-center">
+														<span class="transition-colors group-hover:color-active">
+															{post.data.title}
+														</span>
+														<span class="i-ph-arrow-up-right text-sm opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
 													</span>
-													<span class="i-ph-arrow-up-right text-sm opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
-												</span>
-												<FormattedDate date={post.data.pubDate} />
-											</a>
-										</li>
-									))
-								}
-							</ul>
-						</section>
-					)
-				}
+													<FormattedDate date={post.data.pubDate} />
+												</a>
+											</li>
+										))
+									}
+								</ul>
+							</section>
+						)
+					}
+				</HomeReveal>
 			</div>
 		</main>
 		<Footer />

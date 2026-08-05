@@ -1,9 +1,9 @@
 ---
+import { Image } from 'astro:assets'
 import { getRelativeLocaleUrl } from 'astro:i18n'
 import avatar from '../assets/avatar.jpg'
 import { siteTitle } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
-import FriendImage from './FriendImage.astro'
 import HeaderLink from './HeaderLink.astro'
 import LoadingIndicator from './LoadingIndicator.astro'
 
@@ -38,14 +38,19 @@ const navLinks = [
   class="font-title tracking-tight font-300 flex gap-2 transition-opacity items-center hover:op80"
   title={siteTitle(locale)}
 			>
-				<FriendImage
+				{/* transition:persist 让头像在内容页之间的导航中保持同一元素；
+				     首页 ↔ 内容页的“飞入”由下方 anime.js FLIP 动画负责。 */}
+				<span transition:persist class="contents">
+					<Image
   src={avatar}
   alt=""
-  width={28}
-  height={28}
-  wrapClass="img-outline rounded-full h-7 w-7"
-				/>
-				{siteTitle(locale)}
+  width={160}
+  height={160}
+  class="img-outline rounded-full h-7 w-7 object-cover"
+  data-nav-avatar
+					/>
+				</span>
+				<span data-nav-title class="inline-block">{siteTitle(locale)}</span>
 			</a>
 		)}
 		<div class:list={['flex gap-1 items-center ml-auto px-1.5', isHome && 'bg-nav rounded-full']}>
@@ -95,8 +100,71 @@ const navLinks = [
 </header>
 
 <script>
+import { animate } from 'animejs'
+
 const root = document.documentElement
 const isHomePath = () => (location.pathname.replace(/^\/en/, '') || '/') === '/'
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// 首页 hero ↔ nav 的“飞入”过渡：anime.js FLIP。
+// 导航前记录旧元素位置，换页后先把新元素按旧位置/旧尺寸摆好，再以非线性缓动
+// 飞回原位——title 的落点与 nav 完全一致（原生共享元素过渡会因 h1 的整行宽盒
+// 导致最终位置偏移）。
+let flyFrom: { avatar: DOMRect | null, title: DOMRect | null, fromHome: boolean } | null = null
+
+function homeEls(home: boolean) {
+  return {
+    avatar: document.querySelector(home ? '[data-hero-avatar]' : '[data-nav-avatar]'),
+    title: document.querySelector(home ? '[data-hero-title]' : '[data-nav-title]'),
+  }
+}
+
+document.addEventListener('astro:before-swap', () => {
+  const home = isHomePath()
+  const els = homeEls(home)
+  flyFrom = {
+    avatar: els.avatar?.getBoundingClientRect() ?? null,
+    title: els.title?.getBoundingClientRect() ?? null,
+    fromHome: home,
+  }
+})
+
+document.addEventListener('astro:after-swap', () => {
+  if (!flyFrom)
+    return
+  const { avatar, title, fromHome } = flyFrom
+  flyFrom = null
+  const toHome = isHomePath()
+  if (fromHome === toHome || reduceMotion)
+    return
+  const els = homeEls(toHome)
+  if (avatar && els.avatar)
+    flyTo(els.avatar, avatar)
+  if (title && els.title)
+    flyTo(els.title, title)
+})
+
+function flyTo(el: Element, from: DOMRect) {
+  const to = el.getBoundingClientRect()
+  if (!from.width || !from.height || !to.width || !to.height)
+    return
+  const target = el as HTMLElement
+  // 统一等比缩放（保持宽高比），避免文字/头像被非等比拉伸变形。
+  const s = Math.max(from.width / to.width, from.height / to.height)
+  target.style.transformOrigin = 'top left'
+  target.style.transform = `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${s})`
+  animate(target, {
+    x: 0,
+    y: 0,
+    scale: 1,
+    duration: 650,
+    ease: 'outExpo',
+    onComplete: () => {
+      target.style.transform = ''
+      target.style.transformOrigin = ''
+    },
+  })
+}
 
 // The background layer survives navigation via transition:persist; flip its
 // classes so the color/border cross-fades only when the home state changes.
