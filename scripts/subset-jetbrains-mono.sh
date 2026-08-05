@@ -22,7 +22,7 @@
 set -euo pipefail
 
 SRC="${1:?usage: subset-jetbrains-mono.sh <source font file (ttf)>}"
-OUT="public/fonts/jetbrains-mono"
+OUT="src/assets/fonts/jetbrains-mono"
 NAME="JetBrainsMono"
 
 LATIN_UNICODES='U+0020-00FF,U+2000-206F,U+2190-21FF,U+2300-23FF,U+25A0-25FF,U+27F0-27FF,U+2B00-2BFF'

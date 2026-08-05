@@ -23,7 +23,7 @@
 set -euo pipefail
 
 SRC="${1:?usage: subset-alimama-font.sh <source font file (ttf/woff2)>}"
-OUT="public/fonts/alimama-fangyuanti"
+OUT="src/assets/fonts/alimama-fangyuanti"
 NAME="AlimamaFangYuanTiVF"
 
 # Han characters used by the home title (依如初梦), the page main titles

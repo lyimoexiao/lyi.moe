@@ -128,6 +128,10 @@ export default defineConfig({
   // (ERR_OUTDATED_OPTIMIZED_DEP). Serving the request instead of throwing
   // eliminates the 504 white-screen without affecting the build.
   vite: {
+    build: {
+      // 字体不内联成 base64：unicode-range 分包靠独立文件按需加载
+      assetsInlineLimit: 0,
+    },
     environments: {
       client: {
         optimizeDeps: {
