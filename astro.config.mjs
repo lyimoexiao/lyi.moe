@@ -9,6 +9,7 @@ import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import unoCSS from '@unocss/astro'
 import { defineConfig, fontProviders } from 'astro/config'
+import { minify as minifyHtml } from 'html-minifier-terser'
 
 // Syntax highlighting themes derived from the global palette in
 // src/styles/theme.css: one neutral hue (220) plus the accent hue (201).
@@ -42,12 +43,26 @@ function codeTheme(mode) {
 const COMPRESS_EXTENSIONS = new Set(['.html', '.js', '.mjs', '.cjs', '.css', '.json', '.xml', '.svg', '.txt', '.webmanifest'])
 const COMPRESS_MIN_BYTES = 1024
 
+// HTML 压缩：移除注释；内联脚本用 terser 压缩（保留现代语法）；内联样式用 clean-css。
+const HTML_MINIFY_OPTIONS = {
+  removeComments: true,
+  minifyJS: { ecma: 2020 },
+  minifyCSS: true,
+}
+
+/** 清理一个 HTML 文件：移除注释并压缩内联脚本/样式。 */
+/** @param {string} html */
+async function cleanHtml(html) {
+  return minifyHtml(html, HTML_MINIFY_OPTIONS)
+}
+
 function compressDist() {
   /** @param {{ dir: URL }} options */
   const onBuildDone = async ({ dir }) => {
     const root = fileURLToPath(dir)
     let files = 0
     let savedBytes = 0
+    let cleanedHtml = 0
     /** @param {string} file */
     const compress = async (file) => {
       const ext = path.extname(file)
@@ -72,8 +87,23 @@ function compressDist() {
           await compress(full)
       }
     }
+    // 先清理 HTML（压缩内联脚本、移除注释），再统一生成 .gz/.br。
+    /** @param {string} current */
+    const walkClean = async (current) => {
+      for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+        const full = path.join(current, entry.name)
+        if (entry.isDirectory()) {
+          await walkClean(full)
+        }
+        else if (entry.isFile() && entry.name.endsWith('.html')) {
+          await fs.writeFile(full, await cleanHtml(await fs.readFile(full, 'utf8')))
+          cleanedHtml++
+        }
+      }
+    }
+    await walkClean(root)
     await walk(root)
-    process.stdout.write(`[compress-dist] ${files} files → .gz/.br (saved ${(savedBytes / 1024).toFixed(1)} KiB)\n`)
+    process.stdout.write(`[compress-dist] ${cleanedHtml} html cleaned; ${files} files → .gz/.br (saved ${(savedBytes / 1024).toFixed(1)} KiB)\n`)
   }
 
   return {
