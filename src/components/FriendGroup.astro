@@ -56,7 +56,7 @@ function cardDelay(link: string): string {
 			group.entries.map(friend => (
 				<li class="feed-item" style={`--delay:${cardDelay(friend.link)}`}>
 					<div class="feed-card">
-						<a class="feed-card-main" href={friend.link} target="_blank" rel="noopener noreferrer">
+						<a class="feed-card-main" href={friend.link} target="_blank">
 							<FriendImage
   src={friend.avatar}
   alt=""
@@ -75,7 +75,6 @@ function cardDelay(link: string): string {
   class="feed-rss"
   href={friend.feed}
   target="_blank"
-  rel="noopener noreferrer"
   aria-label={t('rss.feed')}
   title={t('rss.feed')}
 								>
