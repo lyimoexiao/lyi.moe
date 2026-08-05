@@ -64,22 +64,6 @@ const bgs = {
 <script is:inline define:vars={{ bgs, credits }}>
 // eslint-disable-next-line ts/ban-ts-comment
 // @ts-nocheck -- runtime JS; bgs/credits are injected by define:vars above.
-// Picks one background per visit, matching the layout breakpoint (sm).
-// The image is preloaded (via Image) before it is shown: the layer fades in
-// only on success, the credit appears only after the image actually loads,
-// and a broken image falls back to the next candidate (or the plain site
-// background when none load).
-// Theme switches keep the same image and swap to its `_dark` variant;
-// single-theme images re-pick when the current theme doesn't match.
-// Element lookups happen per call because View Transitions replace the DOM:
-// this script re-runs on every navigation, and after-swap re-picks in case
-// the incoming page's script runs before its elements are swapped in.
-// State that must survive across re-runs lives in one shared object (the
-// current pick plus a monotonic load token): the first run's listeners keep
-// firing on later pages, and without shared state a stale closure's in-flight
-// preload could finish last and paint a variant that no longer matches the
-// theme. Every async step re-validates the token, so only the newest pick —
-// and the theme variant it was made for — ever reaches the layers.
 ;(() => {
   const root = document.documentElement
   const mq = window.matchMedia('(min-width: 640px)')
@@ -90,7 +74,6 @@ const bgs = {
     if (!creditEl)
       return
     const file = root.classList.contains('dark') ? bg.darkFile : bg.lightFile
-    // credits is injected at runtime by define:vars; the checker can't see it.
     const credit = file && credits[bg.dir]?.[file]
     if (!credit) {
       creditEl.hidden = true
@@ -194,18 +177,14 @@ const bgs = {
     const dark = root.classList.contains('dark')
     const url = dark ? bg.dark : bg.light
     if (!url) {
-      pick() // current theme has no variant for this image → re-pick
+      pick()
       return
     }
     const token = ++S.loadId
     const img = await preload(url)
-    // Discard loads superseded by a newer pick or variant swap: the theme may
-    // have changed while this variant was loading.
     if (S.loadId !== token || S.current !== bg)
       return
     if (!img) {
-      // Broken image → retry another candidate; keep the current bg if the
-      // failure happened during a variant swap (current unchanged).
       pick({ skip: bg })
       return
     }
@@ -242,7 +221,7 @@ const bgs = {
       if (creditEl)
         creditEl.hidden = true
       S.current = null
-      S.loadId++ // also invalidate any load still in flight
+      S.loadId++
       return
     }
     const bg = pool[Math.floor(Math.random() * pool.length)]
@@ -256,19 +235,15 @@ const bgs = {
       return
     const dark = root.classList.contains('dark')
     if (dark ? !S.current.dark : !S.current.light)
-      pick() // current theme no longer matches → re-pick
+      pick()
     else
-      show(S.current) // keep the same image, swap variant (preloads + fades in)
+      show(S.current)
   }
 
-  // Register persistent listeners once; the inline script re-runs on every
-  // navigation, so a flag prevents duplicate mq/observer wiring. The handlers
-  // read/write the shared state, so they stay correct on later pages.
   if (!window.__bgInit) {
     window.__bgInit = true
     mq.addEventListener('change', pick)
     new MutationObserver(onClassChange).observe(root, { attributes: true, attributeFilter: ['class'] })
-    // Re-pick after client-side navigation swaps the page in.
     document.addEventListener('astro:after-swap', pick)
   }
 

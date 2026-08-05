@@ -18,6 +18,10 @@ export default defineConfig({
     filesystem: ['src/config.ts'],
     pipeline: {
       include: [/\.(vue|svelte|[jt]sx|[jt]s|vine.ts|mdx?|astro|elm|php|phtml|marko|html)($|\?)/],
+      // Don't scan dependencies: UnoCSS's default exclude only skips CSS
+      // ids, and running the class extractors over large minified bundles
+      // (e.g. twikoo) can hang the build in a regex loop.
+      exclude: [/node_modules/],
     },
   },
   theme: {

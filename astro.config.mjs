@@ -1,5 +1,10 @@
 // @ts-check
 
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
+import { brotliCompressSync, gzipSync, constants as zlibConstants } from 'node:zlib'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import unoCSS from '@unocss/astro'
@@ -30,11 +35,75 @@ function codeTheme(mode) {
   }
 }
 
+// Build-time compression: write .gz / .br sidecars next to every text asset
+// in dist so static hosts can serve pre-compressed files (nginx:
+// `gzip_static on; brotli_static on;`). Binary formats (images, woff2) are
+// already compressed and skipped, as are files under the size threshold.
+const COMPRESS_EXTENSIONS = new Set(['.html', '.js', '.mjs', '.cjs', '.css', '.json', '.xml', '.svg', '.txt', '.webmanifest'])
+const COMPRESS_MIN_BYTES = 1024
+
+function compressDist() {
+  /** @param {{ dir: URL }} options */
+  const onBuildDone = async ({ dir }) => {
+    const root = fileURLToPath(dir)
+    let files = 0
+    let savedBytes = 0
+    /** @param {string} file */
+    const compress = async (file) => {
+      const ext = path.extname(file)
+      if (!COMPRESS_EXTENSIONS.has(ext) || file.endsWith('.gz') || file.endsWith('.br'))
+        return
+      const buf = await fs.readFile(file)
+      if (buf.length < COMPRESS_MIN_BYTES)
+        return
+      const gz = gzipSync(buf, { level: 9 })
+      const br = brotliCompressSync(buf, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 } })
+      await Promise.all([fs.writeFile(`${file}.gz`, gz), fs.writeFile(`${file}.br`, br)])
+      files++
+      savedBytes += buf.length - gz.length + (buf.length - br.length)
+    }
+    /** @param {string} current */
+    const walk = async (current) => {
+      for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+        const full = path.join(current, entry.name)
+        if (entry.isDirectory())
+          await walk(full)
+        else if (entry.isFile())
+          await compress(full)
+      }
+    }
+    await walk(root)
+    process.stdout.write(`[compress-dist] ${files} files → .gz/.br (saved ${(savedBytes / 1024).toFixed(1)} KiB)\n`)
+  }
+
+  return {
+    name: 'compress-dist',
+    hooks: {
+      'astro:build:done': onBuildDone,
+    },
+  }
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://lyi.moe',
   trailingSlash: 'never',
-  integrations: [unoCSS(), mdx(), sitemap()],
+  integrations: [unoCSS(), mdx(), sitemap(), compressDist()],
+  // Vite 8 (rolldown) prebundles Astro's dev-toolbar entrypoint (Astro force-
+  // includes it in the client environment), so `exclude` cannot help. During
+  // the first page load, dependency re-optimization can change the ?v= hash
+  // mid-flight, and Vite answers such requests with 504
+  // (ERR_OUTDATED_OPTIMIZED_DEP). Serving the request instead of throwing
+  // eliminates the 504 white-screen without affecting the build.
+  vite: {
+    environments: {
+      client: {
+        optimizeDeps: {
+          ignoreOutdatedRequests: true,
+        },
+      },
+    },
+  },
   markdown: {
     shikiConfig: {
       themes: {

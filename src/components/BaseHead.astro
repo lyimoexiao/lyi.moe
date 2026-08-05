@@ -27,14 +27,13 @@ const { title, description, image } = Astro.props;
 ---
 
 <script is:inline>
-// Set the theme before first paint to avoid a flash of the wrong theme.
 function applyTheme() {
   let stored = null
   try {
     stored = localStorage.getItem('theme')
   }
   catch {
-    // localStorage unavailable; fall back to the OS preference.
+    stored = null
   }
   const dark = stored
     ? stored === 'dark'
@@ -42,8 +41,6 @@ function applyTheme() {
   document.documentElement.classList.toggle('dark', dark)
   document.documentElement.classList.toggle('light', !dark)
 }
-// Re-apply after client-side navigation: the incoming document's class
-// list does not carry the theme over from the current page.
 document.addEventListener('astro:after-swap', applyTheme)
 applyTheme()
 </script>
