@@ -40,11 +40,33 @@
 @font-face {
   font-family: 'JetBrains Mono';
   src:
-    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2-variations'),
-    url('/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2');
+    url('../assets/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2-variations'),
+    url('../assets/fonts/jetbrains-mono/JetBrainsMono-latin.woff2') format('woff2');
   font-weight: 100 800;
   font-display: swap;
   unicode-range: U+0020-00FF, U+2000-206F, U+2190-21FF, U+2300-23FF, U+25A0-25FF, U+27F0-27FF, U+2B00-2BFF;
+}
+
+/*
+  Douyin Sans Bold (抖音美好体 Bold) — the feed group titles
+  (`FriendGroup .feed-title`), matching blog-v3's --font-stroke-free
+  (PostScript name DOUYINSANSBOLD-GB). Subset into latin + cjk slices by
+  scripts/subset-douyin-font.sh (license: SIL OFL 1.1, OFL.txt in the output
+  dir). Static bold cut, registered at weight 800.
+*/
+@font-face {
+  font-family: 'Douyin Sans Bold';
+  src: url('../assets/fonts/douyin-sans/DouyinSansBold-latin.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+  unicode-range: U+0020-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Douyin Sans Bold';
+  src: url('../assets/fonts/douyin-sans/DouyinSansBold-cjk.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+4E00-9FFF;
 }
 
 .font-title,
