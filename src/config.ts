@@ -19,7 +19,8 @@ export interface SocialLink {
 export const siteConfig = {
   author: 'Lyi.',
   title: { 'zh-cn': '依如初梦', 'en': 'Déjà Rêvé' },
-  description: { 'zh-cn': '个人博客与主页。', 'en': 'Personal blog and homepage.' },
+  description: { 'zh-cn': '在无限绝望中前行...', 'en': 'Into infinity darkness...' },
+  keywords: { 'zh-cn': '博客, 个人网站, 前端, 分享, LyiMoeXiao, 凌梦晓, 个人博客, RSS, 计算机科学, 编程, 软件开发, 开源技术, 技术分享, 生活日常, VOCALOID, 中术, 虚拟歌姬', 'en': 'LyiMoeXiao, blog, personal site, frontend, computer science, programming, software development, open source, technology, personal blog' },
 
   socialStyle: {
     /** Icon fill in the default state. */
@@ -87,3 +88,4 @@ export function forLocale<T>(map: Record<string, T>, locale: string): T {
 
 export const siteTitle = (locale: string) => forLocale(siteConfig.title, locale)
 export const siteDescription = (locale: string) => forLocale(siteConfig.description, locale)
+export const siteKeywords = (locale: string) => forLocale(siteConfig.keywords, locale)

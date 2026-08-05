@@ -8,7 +8,7 @@ import { ClientRouter } from 'astro:transitions'
 import alimamaCjk from '../assets/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2'
 import alimamaLatin from '../assets/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2'
 import jetbrainsLatin from '../assets/fonts/jetbrains-mono/JetBrainsMono-latin.woff2'
-import { siteTitle } from '../config'
+import { siteKeywords, siteTitle } from '../config'
 import { getLocale } from '../i18n/ui'
 import '../styles/fonts.css'
 import '../styles/theme.css'
@@ -210,6 +210,7 @@ applyTheme()
 <!-- Primary Meta Tags -->
 <title>{title}</title>
 <meta name="description" content={description} />
+<meta name="keywords" content={siteKeywords(locale)} />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
