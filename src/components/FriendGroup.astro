@@ -9,9 +9,11 @@ import FriendImage from './FriendImage.astro'
 
 interface Props {
   group: FeedGroup
+  /** 标题层级：页面首个分组传 h1 充当页面标题，其余用 h2。 */
+  level?: 'h1' | 'h2'
 }
 
-const { group } = Astro.props
+const { group, level = 'h2' } = Astro.props
 const locale = getLocale(Astro.currentLocale)
 const isEn = locale === 'en'
 const t = useTranslations(locale)
@@ -31,11 +33,23 @@ function cardDelay(link: string): string {
 ---
 
 <section class="feed-group">
-	<h2 class="feed-title font-title">
-		<button type="button" class="feed-title-btn" data-shuffle title={shuffleHint} aria-label={shuffleHint}>
-			{name}
-		</button>
-	</h2>
+	{
+		level === 'h1'
+			? (
+				<h1 class="feed-title font-title">
+					<button type="button" class="feed-title-btn" data-shuffle title={shuffleHint} aria-label={shuffleHint}>
+						{name}
+					</button>
+				</h1>
+			)
+			: (
+				<h2 class="feed-title font-title">
+					<button type="button" class="feed-title-btn" data-shuffle title={shuffleHint} aria-label={shuffleHint}>
+						{name}
+					</button>
+				</h2>
+			)
+	}
 	{desc && <p class="feed-desc">{desc}</p>}
 	<ul class="feed-list">
 		{
@@ -88,7 +102,7 @@ function cardDelay(link: string): string {
     z-index: 1;
     margin-bottom: -0.3em;
     opacity: 0.55;
-    font-size: clamp(2.75rem, 10vw, 5rem);
+    font-size: 5rem;
     font-weight: 700;
     line-height: 1;
     text-align: left;
@@ -131,7 +145,7 @@ function cardDelay(link: string): string {
   .feed-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
-    gap: 0.35em 0.5em;
+    gap: 0.2em 0.5em;
     margin-top: 1.5em;
   }
 
@@ -148,6 +162,7 @@ function cardDelay(link: string): string {
     margin: 0 auto;
     padding: 0.5em 0.4em;
     line-height: 1.4;
+    position: relative;
     transition: transform 0.2s;
   }
 
@@ -208,6 +223,34 @@ function cardDelay(link: string): string {
     100% {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* 手机端：与 blog-v3 的 feed-narrow 一致——更窄的网格、竖排居中的小卡片 */
+  @media (max-width: 528px) {
+    .feed-list {
+      grid-template-columns: repeat(auto-fill, minmax(5em, 1fr));
+      font-size: 0.9em;
+    }
+
+    .feed-card {
+      flex-direction: column;
+      gap: 0.2em;
+      width: auto;
+      margin: 0;
+      padding: 0.5em 0.2em;
+      text-align: center;
+    }
+
+    .feed-card-main {
+      flex-direction: column;
+      gap: 0.35em;
+    }
+
+    .feed-rss {
+      position: absolute;
+      top: 0.2em;
+      right: 0.2em;
     }
   }
 

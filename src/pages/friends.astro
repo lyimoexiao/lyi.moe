@@ -22,11 +22,9 @@ const t = useTranslations(locale)
 		<Header />
 		<main class="px-4 py-16 sm:px-6">
 			<div class="mx-auto max-w-3xl">
-				<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('nav.friends')}</h1>
-				<hr class="my-8 border-base" />
 				{
-					feeds.map(group => (
-						<FriendGroup group={group} />
+					feeds.map((group, index) => (
+						<FriendGroup group={group} level={index === 0 ? 'h1' : 'h2'} />
 					))
 				}
 				<FriendApply />
