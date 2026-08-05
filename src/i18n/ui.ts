@@ -9,7 +9,7 @@ export const ui = {
   'zh-cn': {
     'nav.home': '首页',
     'nav.blog': '博客',
-    'nav.friends': '友链',
+    'nav.links': '友链',
     'nav.about': '关于',
     'nav.menu': '菜单',
     'theme.toggle': '切换主题',
@@ -37,7 +37,7 @@ export const ui = {
   'en': {
     'nav.home': 'Home',
     'nav.blog': 'Blog',
-    'nav.friends': 'Friends',
+    'nav.links': 'Friends',
     'nav.about': 'About',
     'nav.menu': 'Menu',
     'theme.toggle': 'Toggle color theme',
