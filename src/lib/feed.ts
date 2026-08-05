@@ -37,7 +37,7 @@ export function groupDesc(group: FeedGroup, locale: string): string {
 
 export const feeds: FeedGroup[] = [
   {
-    name: { 'zh-cn': '好友', 'en': 'Friends' },
+    name: { 'zh-cn': '好友们', 'en': 'Friends' },
     entries: [
       {
         author: '狂犬主子 🐕',
@@ -66,6 +66,12 @@ export const feeds: FeedGroup[] = [
         date: '2023-04-04',
         feed: '',
       },
+    ],
+  },
+
+  {
+    name: { 'zh-cn': '邻居们', 'en': 'Neighbors' },
+    entries: [
       {
         author: '纸鹿摸鱼处',
         desc: '纸鹿至麓不知路，支炉制露不止漉',
@@ -78,12 +84,13 @@ export const feeds: FeedGroup[] = [
       {
         author: `Dokiu's Blog`,
         desc: '不知道干什么就只有摆烂了',
-        link: 'https://blog.yaooa.cn',
+        link: 'https://blog.adokiu.com',
         icon: 'https://blog.adokiu.com/avatar.png',
         avatar: 'https://blog.adokiu.com/avatar.png',
         date: '2026-01-25',
-        feed: 'https://blog.yaooa.cn/rss.xml',
+        feed: 'https://blog.adokiu.com/rss.xml',
       },
     ],
+
   },
 ]
