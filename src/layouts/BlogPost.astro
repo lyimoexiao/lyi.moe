@@ -6,7 +6,8 @@ import BaseHead from '../components/BaseHead.astro'
 import Footer from '../components/Footer.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 import Header from '../components/Header.astro'
-import { siteTitle } from '../config'
+import Twikoo from '../components/Twikoo.astro'
+import { siteTitle, twikooConfig } from '../config'
 import { getLocale, useTranslations } from '../i18n/ui'
 
 type Props = CollectionEntry<'blog'>['data'] & { words: number }
@@ -25,7 +26,8 @@ const onCover = Boolean(heroImage)
 		<Header />
 		<main class="px-4 py-12 sm:px-6">
 			<div class="grid grid-cols-1 items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_minmax(0,1fr)]">
-				<article class="mx-auto max-w-3xl w-full xl:col-start-2">
+				<div class="mx-auto max-w-3xl w-full xl:col-start-2">
+				<article>
 				<a href={getRelativeLocaleUrl(locale, 'blog')} class="btn-action-sm tap-scale">
 					<span class="i-ph-arrow-left" />
 					{t('blog.back')}
@@ -96,6 +98,8 @@ const onCover = Boolean(heroImage)
 					<slot />
 				</div>
 				</article>
+				{twikooConfig.envId && <Twikoo />}
+				</div>
 				<nav
   id="toc"
   aria-label={t('toc.title')}
@@ -283,6 +287,26 @@ function buildToc() {
   updateTocSpy()
 }
 
+// Scroll the drawer list so the active entry is visible when the panel opens
+// (the scroll-spy only re-positions on active changes, so an entry that was
+// already active stays out of view otherwise). Parks it as the second row,
+// matching keepActiveInView's drawer behavior (no pinned header).
+function scrollActiveIntoView(container: HTMLElement | null) {
+  if (!container)
+    return
+  const li = container.querySelector<HTMLLIElement>('.active')
+  if (!li)
+    return
+  const containerRect = container.getBoundingClientRect()
+  const liRect = li.getBoundingClientRect()
+  if (liRect.top >= containerRect.top && liRect.bottom <= containerRect.bottom)
+    return
+  const liTop = liRect.top - containerRect.top + container.scrollTop
+  const maxTop = container.scrollHeight - container.clientHeight
+  const target = liTop - li.offsetHeight - 6
+  container.scrollTo({ top: Math.max(Math.min(target, maxTop), 0), behavior: 'smooth' })
+}
+
 function openToc() {
   const drawer = document.getElementById('toc-drawer')
   const toggle = document.getElementById('toc-toggle')
@@ -296,6 +320,7 @@ function openToc() {
   requestAnimationFrame(() => {
     panel.classList.remove('translate-x-full')
     mask.classList.remove('opacity-0')
+    scrollActiveIntoView(document.getElementById('toc-drawer-list'))
   })
 }
 

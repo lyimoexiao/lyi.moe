@@ -73,6 +73,19 @@ export const siteConfig = {
   ],
 } as const
 
+// Twikoo 评论配置。留空 `envId` 时评论区不会渲染。
+// 部署方式参考 https://twikoo.js.org/quick-start.html
+export const twikooConfig = {
+  /** Twikoo 环境 ID：腾讯云环境填 envId；Vercel/自建环境填完整地址（如 https://xxx.vercel.app）。 */
+  envId: 'https://twikoo.66ccff.love',
+  /** 环境地域：腾讯云环境填 ap-shanghai 或 ap-guangzhou；Vercel 环境留空。 */
+  region: '',
+  /** 评论区语言，如 zh-CN / en；留空时跟随当前页面语言。 */
+  lang: '',
+  /** 自定义评论路径，用于区分文章；留空时使用当前页面 URL。 */
+  path: '',
+} as const
+
 /** Resolve a per-locale value, falling back to zh-cn. */
 export function forLocale<T>(map: Record<string, T>, locale: string): T {
   return map[locale] ?? map['zh-cn']

@@ -1,0 +1,438 @@
+---
+import twikooCssUrl from 'twikoo/dist/twikoo.css?url'
+import { twikooConfig } from '../config'
+import { getLocale, useTranslations } from '../i18n/ui'
+
+interface Props {
+	/** Override the comment path for this page; defaults to the current URL. */
+	path?: string
+}
+
+const { path } = Astro.props
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const enabled = Boolean(twikooConfig.envId)
+---
+
+{
+	enabled && (
+		<section class="mt-12 pt-8 border-t border-base" aria-labelledby="twikoo-title">
+			<h2 id="twikoo-title" class="font-title text-xl font-600">{t('post.comments')}</h2>
+			{/* 样式以静态资源引入（?url），不依赖 JS 注入，View Transitions 换页后仍保留。 */}
+			<link rel="stylesheet" href={twikooCssUrl} />
+			<div id="twikoo" class="mt-3" data-path={path} />
+		</section>
+	)
+}
+
+<style is:global>
+  /* ------------------------------------------------------------------
+     Twikoo 客制化：只通过覆盖样式实现，不修改 twikoo 包本身。
+     全部颜色/圆角/字体取自站点设计令牌（--c-*、--font-*），
+     因此浅色/深色主题会自动跟随博客。
+  ------------------------------------------------------------------ */
+  #twikoo {
+    color: var(--c-text-1);
+    --twikoo-icon-user: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M4%2022a8%208%200%201%201%2016%200zm8-9c-3.315%200-6-2.685-6-6s2.685-6%206-6s6%202.685%206%206s-2.685%206-6%206%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-thumb-up: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M14.6%208H21a2%202%200%200%201%202%202v2.105c0%20.26-.051.52-.15.761l-3.095%207.515a1%201%200%200%201-.925.62H2a1%201%200%200%201-1-1V10a1%201%200%200%201%201-1h3.482a1%201%200%200%200%20.817-.424L11.752.851a.5.5%200%200%201%20.632-.159l1.814.908a2.5%202.5%200%200%201%201.305%202.852zM7%2010.588V19h11.16L21%2012.105V10h-6.4a2%202%200%200%201-1.938-2.493l.903-3.548a.5.5%200%200%200-.261-.57l-.661-.331l-4.71%206.672c-.25.354-.57.645-.933.858M5%2011H3v8h2z%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-thumb-up-solid: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M2%209h3v12H2a1%201%200%200%201-1-1V10a1%201%200%200%201%201-1m5.293-1.293l6.4-6.4a.5.5%200%200%201%20.654-.047l.853.64a1.5%201.5%200%200%201%20.553%201.57L14.6%208H21a2%202%200%200%201%202%202v2.104a2%202%200%200%201-.15.762l-3.095%207.515a1%201%200%200%201-.925.619H8a1%201%200%200%201-1-1V8.414a1%201%200%200%201%20.293-.707%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-thumb-down: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M9.4%2016H3a2%202%200%200%201-2-2v-2.104a2%202%200%200%201%20.15-.762L4.246%203.62A1%201%200%200%201%205.17%203H22a1%201%200%200%201%201%201v10a1%201%200%200%201-1%201h-3.482a1%201%200%200%200-.817.423l-5.453%207.726a.5.5%200%200%201-.632.159L9.802%2022.4a2.5%202.5%200%200%201-1.305-2.853zm7.6-2.588V5H5.84L3%2011.896V14h6.4a2%202%200%200%201%201.938%202.493l-.903%203.548a.5.5%200%200%200%20.261.571l.661.33l4.71-6.672c.25-.354.57-.644.933-.857M19%2013h2V5h-2z%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-thumb-down-solid: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M22%2015h-3V3h3a1%201%200%200%201%201%201v10a1%201%200%200%201-1%201m-5.293%201.293l-6.4%206.4a.5.5%200%200%201-.654.047L8.8%2022.1a1.5%201.5%200%200%201-.553-1.57L9.4%2016H3a2%202%200%200%201-2-2v-2.104a2%202%200%200%201%20.15-.762L4.246%203.62A1%201%200%200%201%205.17%203H16a1%201%200%200%201%201%201v11.586a1%201%200%200%201-.293.707%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-comment: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M10%203h4a8%208%200%201%201%200%2016v3.5c-5-2-12-5-12-11.5a8%208%200%200%201%208-8m2%2014h2a6%206%200%200%200%200-12h-4a6%206%200%200%200-6%206c0%203.61%202.462%205.966%208%208.48z%22%2F%3E%3C%2Fsvg%3E");
+    --twikoo-icon-comment-solid: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M10%203h4a8%208%200%201%201%200%2016v3.5c-5-2-12-5-12-11.5a8%208%200%200%201%208-8%22%2F%3E%3C%2Fsvg%3E");
+  }
+
+  #twikoo button,
+  #twikoo input,
+  #twikoo textarea {
+    font-family: inherit;
+  }
+
+  /* 标题栏：我们静态渲染“评论”标题，Twikoo 自带的计数标题隐藏以避免重复；
+     排序按钮保留，右对齐成标题下方的小工具条 */
+  #twikoo .tk-comments-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin: -0.25rem 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--c-text-2);
+  }
+
+  #twikoo .tk-comments-count {
+    display: none;
+  }
+
+  #twikoo .tk-sort-item {
+    font-size: 0.75rem;
+    color: var(--c-text-3);
+  }
+
+  #twikoo .tk-sort-item.__active,
+  #twikoo .tk-sort-item:focus {
+    color: var(--c-accent-text);
+  }
+
+  /* 评论加载中的 loading：UnoCSS preflight 会把 svg 变成 block，
+     Element UI 默认的 text-align:center 不再生效，改用 flex 居中。 */
+  #twikoo .el-loading-mask {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #twikoo .el-loading-spinner {
+    position: static;
+    top: auto;
+    margin: 0;
+    width: auto;
+  }
+
+  #twikoo .el-loading-spinner .circular {
+    margin: 0 auto;
+  }
+
+  /* 输入框 / 文本域 */
+  #twikoo .el-input__inner,
+  #twikoo .el-textarea__inner {
+    background-color: var(--c-bg-2);
+    border: 1px solid var(--c-border);
+    border-radius: 0.5rem;
+    color: var(--c-text-1);
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #twikoo .el-input__inner::placeholder,
+  #twikoo .el-textarea__inner::placeholder {
+    color: var(--c-text-3);
+  }
+
+  #twikoo .el-input__inner:hover,
+  #twikoo .el-textarea__inner:hover {
+    border-color: color-mix(in srgb, var(--c-text-2) 40%, var(--c-border));
+  }
+
+  #twikoo .el-input__inner:focus,
+  #twikoo .el-textarea__inner:focus {
+    outline: none;
+    border-color: var(--c-accent-text);
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+  }
+
+  #twikoo .el-input-group__append,
+  #twikoo .el-input-group__prepend {
+    background-color: var(--c-bg-3);
+    border-color: var(--c-border);
+    color: var(--c-text-2);
+    font-size: 0.8125rem;
+  }
+
+  /* 输入组的前缀/后缀圆角与输入框（0.5rem）对齐 */
+  #twikoo .el-input-group--prepend .el-input-group__prepend {
+    border-radius: 0.5rem 0 0 0.5rem;
+  }
+
+  #twikoo .el-input-group--prepend .el-input__inner {
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+
+  #twikoo .el-input-group--append .el-input__inner {
+    border-radius: 0.5rem 0 0 0.5rem;
+  }
+
+  #twikoo .el-input-group--append .el-input-group__append {
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+
+  /* 管理面板（深色遮罩）里的输入组用半透明白 */
+  #twikoo .tk-admin .el-input-group__prepend,
+  #twikoo .tk-admin .el-input-group__append {
+    background-color: rgb(255 255 255 / 8%);
+    border-color: rgb(255 255 255 / 16%);
+    color: rgb(255 255 255 / 72%);
+  }
+
+  /* 按钮：默认描边、主按钮用强调色 */
+  #twikoo .el-button {
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s, opacity 0.2s;
+  }
+
+  #twikoo .el-button:not(.el-button--primary):not(.el-button--text) {
+    background-color: transparent;
+    border-color: var(--c-border);
+    color: var(--c-text-2);
+  }
+
+  #twikoo .el-button:not(.el-button--primary):not(.el-button--text):hover,
+  #twikoo .el-button:not(.el-button--primary):not(.el-button--text):focus {
+    color: var(--c-accent-text);
+    border-color: var(--c-accent-text);
+    background-color: var(--c-accent-soft);
+  }
+
+  #twikoo .el-button--primary {
+    background-color: var(--c-accent-text);
+    border-color: var(--c-accent-text);
+    color: #fff;
+  }
+
+  #twikoo .el-button--primary:hover,
+  #twikoo .el-button--primary:focus {
+    background-color: color-mix(in srgb, var(--c-accent-text) 85%, #fff);
+    border-color: color-mix(in srgb, var(--c-accent-text) 85%, #fff);
+    color: #fff;
+  }
+
+  #twikoo .el-button.is-disabled,
+  #twikoo .el-button--primary.is-disabled {
+    background-color: var(--c-bg-3);
+    border-color: var(--c-border);
+    color: var(--c-text-3);
+  }
+
+  /* 头像：圆形；未设置头像时显示强调色底 + 用户图标 */
+  #twikoo .tk-avatar {
+    border-radius: 9999px;
+  }
+
+  #twikoo .tk-avatar:not(.tk-has-avatar) .tk-avatar-img {
+    position: relative;
+    background-color: var(--c-accent-soft);
+    color: var(--c-accent-text);
+  }
+
+  #twikoo .tk-avatar:not(.tk-has-avatar) .tk-avatar-img svg {
+    display: none;
+  }
+
+  #twikoo .tk-avatar:not(.tk-has-avatar) .tk-avatar-img::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: currentColor;
+    -webkit-mask: var(--twikoo-icon-user) center / contain no-repeat;
+    mask: var(--twikoo-icon-user) center / contain no-repeat;
+  }
+
+  /* 评论元信息 */
+  #twikoo .tk-nick {
+    color: var(--c-text-1);
+    font-weight: 600;
+  }
+
+  #twikoo .tk-nick-link:hover {
+    color: var(--c-accent-text);
+  }
+
+  #twikoo .tk-time {
+    color: var(--c-text-3);
+  }
+
+  #twikoo .tk-tag {
+    background-color: var(--c-bg-3);
+    color: var(--c-text-2);
+    border-radius: 0.25rem;
+  }
+
+  #twikoo .tk-tag-green {
+    background-color: var(--c-accent-soft);
+    border-color: color-mix(in srgb, var(--c-accent-text) 40%, transparent);
+    color: var(--c-accent-text);
+  }
+
+  /* 评论正文：对齐文章 .prose 的排版（链接/代码/引用块/图片） */
+  #twikoo .tk-content {
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+  }
+
+  #twikoo .tk-content a {
+    color: var(--c-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--c-accent-text) 35%, transparent);
+    transition: opacity 0.2s;
+  }
+
+  #twikoo .tk-content a:hover {
+    opacity: 0.75;
+  }
+
+  #twikoo .tk-content code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--c-bg-3);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+  }
+
+  #twikoo .tk-content pre,
+  #twikoo .tk-preview-container pre {
+    background-color: var(--c-bg-2);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  #twikoo .tk-content blockquote {
+    margin: 1em 0;
+    padding: 0.75em 1.25em;
+    border-left: 3px solid color-mix(in srgb, var(--c-accent-text) 50%, transparent);
+    border-radius: 0 8px 8px 0;
+    background-color: var(--c-accent-soft);
+    color: var(--c-text-2);
+  }
+
+  #twikoo .tk-content img {
+    border-radius: 0.5rem;
+  }
+
+  /* 操作区：链接与图标统一用强调色。图标换用 Remix Icon，但不用位置选择器：
+     Twikoo 的按钮顺序会随“管理员删除按钮 / 是否启用点踩”变化，容易错位，
+     因此用按钮内原始 SVG path 做语义匹配（点赞/点踩/回复各不相同的图标形状）。 */
+  #twikoo .tk-action-link,
+  #twikoo .tk-actions button {
+    color: var(--c-accent-text);
+  }
+
+  #twikoo .tk-action-icon,
+  #twikoo .tk-action-icon-solid {
+    color: var(--c-accent-text);
+  }
+
+  /* 支持 :has() 的浏览器按语义替换图标；不支持的保留 Twikoo 原始图标（仅换色） */
+  @supports selector(:has(*)) {
+    #twikoo .tk-action-icon:has(svg path[d^="M171.5"]) {
+      background-color: currentColor;
+      -webkit-mask: var(--twikoo-icon-thumb-up) center / contain no-repeat;
+      mask: var(--twikoo-icon-thumb-up) center / contain no-repeat;
+    }
+
+    #twikoo .tk-action-icon-solid:has(svg path[d^="M80 160"]) {
+      background-color: currentColor;
+      -webkit-mask: var(--twikoo-icon-thumb-up-solid) center / contain no-repeat;
+      mask: var(--twikoo-icon-thumb-up-solid) center / contain no-repeat;
+    }
+
+    #twikoo .tk-action-icon:has(svg path[d^="M360"]) {
+      background-color: currentColor;
+      -webkit-mask: var(--twikoo-icon-thumb-down) center / contain no-repeat;
+      mask: var(--twikoo-icon-thumb-down) center / contain no-repeat;
+    }
+
+    #twikoo .tk-action-icon-solid:has(svg path[d^="M384"]) {
+      background-color: currentColor;
+      -webkit-mask: var(--twikoo-icon-thumb-down-solid) center / contain no-repeat;
+      mask: var(--twikoo-icon-thumb-down-solid) center / contain no-repeat;
+    }
+
+    #twikoo .tk-action-icon:has(svg path[d^="M51.9"]),
+    #twikoo .tk-action-icon-solid:has(svg path[d^="M512 240"]) {
+      background-color: currentColor;
+      -webkit-mask: var(--twikoo-icon-comment) center / contain no-repeat;
+      mask: var(--twikoo-icon-comment) center / contain no-repeat;
+    }
+  }
+
+  #twikoo .tk-submit-action-icon {
+    color: var(--c-text-2);
+  }
+
+  #twikoo .tk-extras,
+  #twikoo .tk-icon {
+    color: var(--c-text-3);
+  }
+
+  /* 展开 / 预览 / 页脚 / 分页 */
+  #twikoo .tk-preview-container {
+    background-color: var(--c-bg-2);
+    border-color: var(--c-border);
+  }
+
+  #twikoo .tk-expand {
+    color: var(--c-text-2);
+    border-radius: 0.5rem;
+  }
+
+  #twikoo .tk-expand:hover {
+    background-color: var(--c-bg-2);
+  }
+
+  #twikoo .tk-expand:active {
+    background-color: var(--c-bg-3);
+  }
+
+  #twikoo .tk-footer {
+    color: var(--c-text-3);
+  }
+
+  #twikoo .tk-footer a {
+    color: var(--c-accent-text);
+  }
+
+  #twikoo .tk-pagination-pager {
+    border-radius: 0.375rem;
+  }
+
+  #twikoo .tk-pagination-pager:hover {
+    background-color: var(--c-bg-3);
+  }
+
+  #twikoo .tk-pagination-pager.__current {
+    background-color: var(--c-accent-text);
+    color: #fff;
+  }
+
+  /* 深色主题下 Twikoo 硬编码的浅色部分 */
+  html.dark #twikoo {
+    color-scheme: dark;
+  }
+
+  html.dark #twikoo .OwO .OwO-body {
+    color: #fff;
+    background-color: #4a4a4a;
+  }
+</style>
+
+<script>
+// Use the slim build (no Tencent Cloud SDK, roughly half the size): envId is
+// a plain URL here, so the tcb code path is never used. The stylesheet is
+// still emitted statically by the build (see the <link> above), so the page
+// stays styled even if this module fails to load.
+import twikoo from 'twikoo/dist/twikoo.min.js'
+import { twikooConfig } from '../config'
+
+const envId = twikooConfig.envId
+const region = twikooConfig.region
+const configLang = twikooConfig.lang
+const configPath = twikooConfig.path
+
+function initTwikoo() {
+  if (!envId)
+    return
+  const el = document.getElementById('twikoo')
+  if (!el || el.dataset.twikooInit)
+    return
+  el.dataset.twikooInit = 'true'
+  twikoo.init({
+    envId,
+    el,
+    region: region || undefined,
+    path: configPath || el.dataset.path || location.pathname,
+    lang: configLang || (document.documentElement.lang.startsWith('zh') ? 'zh-CN' : 'en'),
+  })
+}
+
+// View Transitions swap in a fresh container on navigation, so init on
+// every page load; the dataset guard keeps it idempotent per container.
+document.addEventListener('astro:page-load', initTwikoo)
+initTwikoo()
+</script>

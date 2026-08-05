@@ -3,7 +3,8 @@ import BaseHead from '../../components/BaseHead.astro'
 import Footer from '../../components/Footer.astro'
 import FriendImage from '../../components/FriendImage.astro'
 import Header from '../../components/Header.astro'
-import { siteDescription, siteTitle } from '../../config'
+import Twikoo from '../../components/Twikoo.astro'
+import { siteDescription, siteTitle, twikooConfig } from '../../config'
 import { getLocale, useTranslations } from '../../i18n/ui'
 import { friends } from '../../lib/friends'
 
@@ -74,6 +75,7 @@ const t = useTranslations(locale)
 						))
 					}
 				</ul>
+				{twikooConfig.envId && <Twikoo path="/friends" />}
 			</div>
 		</main>
 		<Footer />
