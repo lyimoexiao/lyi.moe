@@ -157,8 +157,6 @@ const onCover = Boolean(heroImage)
 // anchor links, and highlight the section in view. Rebuilt on every
 // client-side navigation: View Transitions replace the DOM, so all element
 // lookups happen per call and never get cached across navigations.
-// Shared scroll-spy state: swapped on every navigation so the single
-// module-level listener below always tracks the current page's headings.
 let tocState: { headings: HTMLElement[], positions: number[], setActive: (id: string) => void } | null = null
 let tocScrollTimer = 0
 
@@ -222,8 +220,6 @@ function buildToc() {
       items.push({ heading, li, link: a, section, container, headerH })
     }
   }
-  // Keep the active entry pinned near the top of its own scrollport (the
-  // second visible row), unless the list has run out of room at the bottom.
   // Keep the active entry as the second visible row (one row height below
   // the scrollport top), clamped to the scrollable range. Positions come
   // from getBoundingClientRect: li.offsetTop would be relative to the ul
@@ -236,8 +232,6 @@ function buildToc() {
     const liRect = li.getBoundingClientRect()
     const liTop = liRect.top - containerRect.top + container.scrollTop
     const maxTop = container.scrollHeight - container.clientHeight
-    // Park the active row one row below the (possibly pinned) header: the
-    // second visible entry, unless the list has run out of room at the bottom.
     const target = liTop - headerH - li.offsetHeight - 6
     container.scrollTo({ top: Math.max(Math.min(target, maxTop), 0), behavior: 'smooth' })
   }
@@ -273,10 +267,9 @@ function buildToc() {
       item.li.classList.toggle('has-active', isSectionOfActive)
     })
   }
-  // Scroll-spy: recompute on scroll from cached document positions (no
-  // layout reads per frame). The active heading is the last one whose top
-  // has crossed the 30% reading line. State is swapped per navigation so a
-  // single module-level listener always sees the current page's headings.
+  // Scroll-spy from cached document positions (no layout reads per frame);
+  // state is swapped per navigation so the module-level scroll listener
+  // always tracks the current page's headings.
   const positions = headings.map(h => h.getBoundingClientRect().top + window.scrollY)
   tocState = { headings, positions, setActive }
   updateTocSpy()

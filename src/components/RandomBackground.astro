@@ -14,7 +14,6 @@ const IMG_EXT = /\.(?:avif|jpe?g|png|webp)$/i
 
 function listBgs(dir: string) {
   const files = fs.readdirSync(`public/bg/${dir}`).filter(f => IMG_EXT.test(f))
-  // Group by base name, tracking which variant each file provides.
   const byBase = new Map<string, { plain?: string, light?: string, dark?: string }>()
   for (const f of files) {
     const key = f.replace(/(_light|_dark)?\.\w+$/, '')

@@ -17,14 +17,10 @@ export interface SocialLink {
 }
 
 export const siteConfig = {
-  // Site identity
   author: 'Lyi.',
   title: { 'zh-cn': '依如初梦', 'en': 'Déjà Rêvé' },
   description: { 'zh-cn': '个人博客与主页。', 'en': 'Personal blog and homepage.' },
 
-  // Social icon buttons below the typequote. Default state: no background,
-  // icon in socialStyle.color. On hover the icon takes the link's brand color
-  // and the button gets a tinted background derived from it (hoverBg).
   socialStyle: {
     /** Icon fill in the default state. */
     color: 'color-c-text-2',
@@ -37,33 +33,32 @@ export const siteConfig = {
       name: 'GitHub',
       href: 'https://github.com/lyimoexiao',
       icon: 'i-ri-github-fill',
-      hoverColor: 'hover:color-[#181717] dark:hover:color-[#fff]', // GitHub brand black; white in dark mode
+      hoverColor: 'hover:color-[#181717] dark:hover:color-[#fff]',
       hoverBg: 'hover:bg-[#181717]/12 dark:hover:bg-[#fff]/12',
     },
     {
       name: 'Email',
       href: 'mailto:lyimoexiao@outlook.com',
       icon: 'i-ri-mail-line',
-      hoverColor: 'hover:color-[#0078D4]', // Outlook blue
+      hoverColor: 'hover:color-[#0078D4]',
       hoverBg: 'hover:bg-[#0078D4]/12',
     },
     {
       name: 'Bilibili',
-      href: 'https://space.bilibili.com/29202562', // 替换为你的 Bilibili UID
+      href: 'https://space.bilibili.com/29202562',
       icon: 'i-ri-bilibili-fill',
-      hoverColor: 'hover:color-[#FB7299]', // Bilibili pink
+      hoverColor: 'hover:color-[#FB7299]',
       hoverBg: 'hover:bg-[#FB7299]/12',
     },
     {
       name: '网易云音乐',
-      href: 'https://music.163.com/user/home?id=295726463', // 替换为你的网易云音乐 ID
+      href: 'https://music.163.com/user/home?id=295726463',
       icon: 'i-ri-netease-cloud-music-line',
-      hoverColor: 'hover:color-[#C20C0C]', // NetEase Cloud Music red
+      hoverColor: 'hover:color-[#C20C0C]',
       hoverBg: 'hover:bg-[#C20C0C]/12',
     },
   ] satisfies SocialLink[],
 
-  // Random one-liner typed out on the home page.
   quotes: [
     '『心贴心 想这一刻 拥在你怀里』',
     '『幻想着命运 如果能让我们 再靠近』',
@@ -86,7 +81,6 @@ export const twikooConfig = {
   path: '',
 } as const
 
-/** Resolve a per-locale value, falling back to zh-cn. */
 export function forLocale<T>(map: Record<string, T>, locale: string): T {
   return map[locale] ?? map['zh-cn']
 }
