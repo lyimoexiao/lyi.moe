@@ -7,7 +7,7 @@ updated: 2026-08-05 17:31:52
 
 - Requirements: generally consistent with most independent blogs
   - Maintained long-term, publishing **valuable original content**
-  - Links are not inserted via JavaScript, with no `nofollow` / `noopener` attributes.
+  - Links are **NOT** inserted via JavaScript, with no `nofollow` / `noopener` attributes.
   - Corporate, tool, or other non-personal sites are not accepted for now.
   - The site must be legal and compliant — no pornographic, violent, gambling, or reactionary content.
   - The site should be well organized, with no indiscriminate content scraping.
