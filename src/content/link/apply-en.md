@@ -17,7 +17,13 @@ updated: 2026-08-05 17:31:52
   - Attach your link info in :tip[any form]{tip="URL, natural language, or programming language"}, e.g.
     ```ts
     export default {
-      // Fill in a single entry object from feed.ts
+      author: 'Your name',
+      desc: 'One-line description of your blog',
+      link: 'https://example.com',
+      icon: 'https://example.com/favicon.ico',
+      avatar: 'https://example.com/avatar.png',
+      date: '2026-08-05',
+      feed: 'https://example.com/feed.xml', // optional: RSS feed URL
     } satisfies Friend
     ```
 - Your info may be slightly adjusted for better presentation.

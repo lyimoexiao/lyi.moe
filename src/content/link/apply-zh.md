@@ -17,7 +17,13 @@ updated: 2026-08-05 17:31:52
   - 以 :tip[任意形式]{tip="指向信息的 URL、自然语言、编程语言"} 附上友链信息
     ```ts
     export default {
-      // 补全为 feed.ts 中单项的对象
+      author: '你的昵称',
+      desc: '一句话介绍你的博客',
+      link: 'https://example.com',
+      icon: 'https://example.com/favicon.ico',
+      avatar: 'https://example.com/avatar.png',
+      date: '2026-08-05',
+      feed: 'https://example.com/feed.xml', // 可选：RSS 订阅源
     } satisfies Friend
     ```
 - 信息可能会被适当修改，以保证展示效果
