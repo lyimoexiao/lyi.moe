@@ -120,10 +120,15 @@ applyTheme()
     const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en'
     const copy = lang === 'zh' ? '复制' : 'Copy'
     const copied = lang === 'zh' ? '已复制' : 'Copied'
-    for (const pre of document.querySelectorAll<HTMLElement>('pre.astro-code')) {
-      if (pre.dataset.copyBtn)
+    for (const block of document.querySelectorAll<HTMLElement>('.z-codeblock')) {
+      if (block.dataset.copyBtn)
         continue
-      pre.dataset.copyBtn = 'true'
+      const pre = block.querySelector('pre.astro-code')
+      const operations = block.querySelector('.code-operations')
+      if (!pre || !operations)
+        continue
+      block.dataset.copyBtn = 'true'
+      const code = pre.querySelector('code')
       const btn = document.createElement('button')
       btn.type = 'button'
       btn.className = 'copy-btn'
@@ -134,7 +139,6 @@ applyTheme()
       label.textContent = copy
       btn.append(icon, label)
       btn.addEventListener('click', async () => {
-        const code = pre.querySelector('code')
         if (!code || !(await copyText(code.textContent ?? '')))
           return
         btn.classList.add('copied')
@@ -146,7 +150,7 @@ applyTheme()
           label.textContent = copy
         }, 1500)
       })
-      pre.appendChild(btn)
+      operations.appendChild(btn)
     }
   }
   document.addEventListener('astro:page-load', init)

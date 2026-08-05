@@ -11,9 +11,7 @@ import sitemap from '@astrojs/sitemap'
 import unoCSS from '@unocss/astro'
 import { defineConfig, fontProviders } from 'astro/config'
 import { minify as minifyHtml } from 'html-minifier-terser'
-import remarkDirective from 'remark-directive'
-import { remarkCopy } from './src/remark/copy.ts'
-import { remarkTip } from './src/remark/tip.ts'
+import { rehypePlugins, remarkPlugins } from './src/remark/index.ts'
 
 // Syntax highlighting themes derived from the global palette in
 // src/styles/theme.css: one neutral hue (220) plus the accent hue (201).
@@ -139,10 +137,11 @@ export default defineConfig({
     },
   },
   markdown: {
-    // `code`{copy} 与 :tip[文字]{tip="说明"}：全站 Markdown（含文章）可用，
-    // 对应 blog-v3 的 MDC 语法。remarkDirective 需先于 remarkTip 解析指令。
+    // 全站统一的 Markdown 处理器（src/remark/index.ts）：
+    // 内容集合、MDX 与友链申请内容共用同一套 remark/rehype 插件。
     processor: unified({
-      remarkPlugins: [remarkDirective, remarkCopy, remarkTip],
+      remarkPlugins,
+      rehypePlugins,
     }),
     shikiConfig: {
       themes: {

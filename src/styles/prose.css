@@ -125,54 +125,106 @@
   padding: 0.15em 0.4em;
 }
 
-/* Code blocks: shiki dual themes, compact type, pinned line numbers.
-   文章与友链申请页共用同一套样式（.friend-apply）。 */
-.prose pre,
-.friend-apply pre {
+/* Code blocks：blog-v3 ProsePre 结构（rehypeCodeBlock 包装）。
+   头部承载语言标签与复制按钮（不覆盖代码、不随代码横向滚动），
+   行号固定在左侧 gutter，pre 在下方横向滚动。文章与友链申请页共用。 */
+.z-codeblock {
   --code-gutter: 3.5em;
   position: relative;
   contain: paint;
   margin: 1.5em 0;
+  border-radius: 10px;
+  background-color: var(--c-bg-2);
+  font-size: 0.875em;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+/* 友链申请页容器字号为 0.875rem，这里把代码块基准对齐到文章的 1rem，
+   使字号、行号 gutter 与文章完全一致。 */
+.friend-apply .z-codeblock {
+  font-size: 0.875rem;
+}
+
+.z-codeblock figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 0.45rem 0.75rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+
+.z-codeblock .code-language {
+  opacity: 0.7;
+}
+
+.z-codeblock .code-operations {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.z-codeblock:hover .code-operations,
+.z-codeblock:focus-within .code-operations {
+  opacity: 1;
+}
+
+/* 触屏设备没有 hover：直接显示操作按钮 */
+@media (hover: none) {
+  .z-codeblock .code-operations {
+    opacity: 1;
+  }
+}
+
+/* 兜底：未被 rehypeCodeBlock 包装的独立 pre */
+.prose > pre,
+.friend-apply > pre {
+  margin: 1.5em 0;
   padding: 1rem;
-  padding-inline-start: var(--code-gutter);
   background-color: var(--c-bg-2);
   border-radius: 10px;
   overflow-x: auto;
   font-size: 0.875em;
   line-height: 1.5;
-  tab-size: 2;
-  counter-reset: line;
 }
 
-/* 友链申请页容器字号为 0.875rem，这里把代码块基准对齐到文章的 1rem，
-   使字号、行号 gutter 与文章完全一致。 */
-.friend-apply pre {
-  font-size: 0.875rem;
+.z-codeblock pre {
+  margin: 0;
+  padding: 1rem;
+  padding-inline-start: var(--code-gutter);
+  overflow-x: auto;
+  counter-reset: line;
 }
 
 /* Override shiki's inline background and base color so the block matches
    the theme. Token colors keep their inline light values, and switch to
    the dark variants when the site theme class is active. */
-.prose pre.astro-code,
-.friend-apply pre.astro-code {
+.z-codeblock pre.astro-code {
   background-color: var(--c-bg-2) !important;
   color: var(--c-text-1) !important;
 }
 
-html.dark .prose pre.astro-code,
-html.dark .prose pre.astro-code span,
-html.dark .friend-apply pre.astro-code,
-html.dark .friend-apply pre.astro-code span {
+html.dark .z-codeblock pre.astro-code,
+html.dark .z-codeblock pre.astro-code span {
   color: var(--shiki-dark, var(--c-text-1)) !important;
 }
 
-.prose pre.astro-code .line,
-.friend-apply pre.astro-code .line {
+.z-codeblock pre.astro-code .line {
   counter-increment: line;
 }
 
-.prose pre.astro-code .line::before,
-.friend-apply pre.astro-code .line::before {
+/* 行号：固定在左侧 gutter，横向滚动时保持可见（blog-v3 同款） */
+.z-codeblock pre.astro-code .line::before {
   content: counter(line);
   position: fixed;
   inset-inline-start: 0;
@@ -183,26 +235,10 @@ html.dark .friend-apply pre.astro-code span {
   background-color: var(--c-bg-2);
   color: var(--c-text-3);
   z-index: 1;
+  user-select: none;
 }
 
-/* Language badge, shown in the top right corner of the code block. */
-.prose pre.astro-code::after,
-.friend-apply pre.astro-code::after {
-  content: attr(data-language);
-  position: absolute;
-  top: 0.4rem;
-  right: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--c-text-3);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.prose pre code,
-.friend-apply pre code {
+.z-codeblock pre code {
   background: none;
   padding: 0;
   font-size: 1em;
@@ -244,41 +280,31 @@ html.dark .prose img {
   font-weight: 700;
 }
 
-/* Copy button injected by the post layout script. */
+/* 复制按钮：位于代码块头部右侧，悬浮代码块时显示 */
 .copy-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
   padding: 0.2em 0.6em;
-  border: 1px solid var(--c-border);
+  border: none;
   border-radius: 6px;
-  background-color: color-mix(in srgb, var(--c-bg) 75%, transparent);
-  color: var(--c-text-1);
-  font-family: inherit;
-  font-size: 0.75rem;
-  opacity: 0;
+  background: none;
+  font: inherit;
+  color: var(--c-text-2);
   cursor: pointer;
   transition:
-    opacity 0.2s,
-    border-color 0.2s,
-    background-color 0.2s,
-    color 0.2s;
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.copy-btn:hover,
+.copy-btn:focus-visible {
+  color: var(--c-accent-text);
+  background-color: var(--c-accent-soft);
 }
 
 .copy-btn.copied {
-  border-color: color-mix(in srgb, var(--c-ok) 45%, transparent);
-  background-color: color-mix(in srgb, var(--c-ok) 14%, transparent);
   color: var(--c-ok);
-}
-
-.prose pre:hover .copy-btn,
-.friend-apply pre:hover .copy-btn,
-.copy-btn:focus-visible {
-  opacity: 1;
 }
 
 /* ---------- Heading anchors + table of contents ---------- */
