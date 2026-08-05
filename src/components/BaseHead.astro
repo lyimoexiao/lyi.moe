@@ -5,9 +5,8 @@ import { getRelativeLocaleUrl } from 'astro:i18n'
 import { ClientRouter } from 'astro:transitions'
 // Import the stylesheets here so that they are included on
 // all pages through the use of the <BaseHead /> component.
-import alimamaCjk from '../assets/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-cjk.woff2'
-import alimamaLatin from '../assets/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF-latin.woff2'
-import jetbrainsLatin from '../assets/fonts/jetbrains-mono/JetBrainsMono-latin.woff2'
+import alimama from '../assets/fonts/alimama-fangyuanti/AlimamaFangYuanTiVF.woff2'
+import jetbrains from '../assets/fonts/jetbrains-mono/JetBrainsMono.woff2'
 import { siteKeywords, siteTitle } from '../config'
 import { getLocale } from '../i18n/ui'
 import '../styles/fonts.css'
@@ -194,13 +193,12 @@ applyTheme()
 
 <Font cssVariable="--font-atkinson" preload />
 
-<!-- Alimama FangYuanTi VF subsets (latin + CJK), used by the home title
-     and nav links; both are tiny and on the first screen. -->
-<link rel="preload" href={alimamaLatin} as="font" type="font/woff2" crossorigin />
-<link rel="preload" href={alimamaCjk} as="font" type="font/woff2" crossorigin />
+<!-- Alimama FangYuanTi VF (full, no subsetting), used by the home title
+     and nav links; it's on the first screen. -->
+<link rel="preload" href={alimama} as="font" type="font/woff2" crossorigin />
 
-<!-- JetBrains Mono subset, used by code blocks. -->
-<link rel="preload" href={jetbrainsLatin} as="font" type="font/woff2" crossorigin />
+<!-- JetBrains Mono (full), used by code blocks. -->
+<link rel="preload" href={jetbrains} as="font" type="font/woff2" crossorigin />
 
 <ClientRouter />
 

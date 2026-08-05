@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-# Regenerate all font subsets before a build. Runs automatically via the
+# Regenerate the Douyin Sans subset before a build. Runs automatically via the
 # `prebuild` npm script (pnpm build); can also be run manually.
 #
-# Sources live in fonts-src/ (gitignored — Alimama's license forbids
-# redistributing the source, so it must not be committed):
-#   fonts-src/AlimamaFangYuanTiVF-Thin.ttf
-#   fonts-src/DouyinSansBold.ttf
-#   fonts-src/JetBrainsMono[wght].ttf
+# Source lives in fonts-src/ (gitignored): fonts-src/DouyinSansBold.ttf
+#
+# (Alimama FangYuanTi VF and JetBrains Mono are committed in full as single
+# woff2 files, no subsetting.)
 #
 # Deployment (e.g. Vercel) never needs this: fonts-src/ isn't uploaded there,
 # so the wrapper exits immediately and the committed woff2 are used as-is.
 # Same when fonts-src/ exists but python3/uv are unavailable.
 #
-# The Han characters for the Alimama and Douyin CJK slices are extracted from
+# The Han characters for the Douyin CJK slice are extracted from
 # the site's own copy (config title, ui.ts strings, feed group names), so
-# changing group names / nav labels / titles regenerates the fonts
+# changing group names / nav labels / titles regenerates the font
 # automatically — no need to maintain a character list by hand.
 
 set -euo pipefail
@@ -41,22 +40,9 @@ print(''.join(sorted({c for c in text if '\u4e00' <= c <= '\u9fff'})))
 PY
 )"
 
-run() {
-  local name="$1" src="$2"
-  shift 2
-  if [ -f "$src" ]; then
-    echo "subset-fonts: $name"
-    "$@"
-  else
-    echo "subset-fonts: skip $name (missing $src, keeping committed woff2)"
-  fi
-}
-
-run "alimama" fonts-src/AlimamaFangYuanTiVF-Thin.ttf \
-  env TEXT_CJK="$HAN_CHARS" bash scripts/subset-alimama-font.sh
-
-run "douyin" fonts-src/DouyinSansBold.ttf \
+if [ -f fonts-src/DouyinSansBold.ttf ]; then
+  echo "subset-fonts: douyin"
   env TEXT_CJK="$HAN_CHARS" bash scripts/subset-douyin-font.sh
-
-run "jetbrains-mono" "fonts-src/JetBrainsMono[wght].ttf" \
-  bash scripts/subset-jetbrains-mono.sh
+else
+  echo "subset-fonts: skip douyin (missing fonts-src/DouyinSansBold.ttf, keeping committed woff2)"
+fi
