@@ -113,8 +113,46 @@ applyTheme()
       })
     })
   }
+
+  // 代码块复制按钮：文章与友链申请页的 astro-code 代码块共用，
+  // 注入右上角“复制”按钮，点击复制整块代码。
+  const initCodeCopy = () => {
+    const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en'
+    const copy = lang === 'zh' ? '复制' : 'Copy'
+    const copied = lang === 'zh' ? '已复制' : 'Copied'
+    for (const pre of document.querySelectorAll<HTMLElement>('pre.astro-code')) {
+      if (pre.dataset.copyBtn)
+        continue
+      pre.dataset.copyBtn = 'true'
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'copy-btn'
+      const icon = document.createElement('span')
+      icon.className = 'i-ph-copy copy-icon'
+      const label = document.createElement('span')
+      label.className = 'copy-label'
+      label.textContent = copy
+      btn.append(icon, label)
+      btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code')
+        if (!code || !(await copyText(code.textContent ?? '')))
+          return
+        btn.classList.add('copied')
+        icon.classList.replace('i-ph-copy', 'i-ph-check')
+        label.textContent = copied
+        window.setTimeout(() => {
+          btn.classList.remove('copied')
+          icon.classList.replace('i-ph-check', 'i-ph-copy')
+          label.textContent = copy
+        }, 1500)
+      })
+      pre.appendChild(btn)
+    }
+  }
   document.addEventListener('astro:page-load', init)
+  document.addEventListener('astro:page-load', initCodeCopy)
   init()
+  initCodeCopy()
 })()
 </script>
 

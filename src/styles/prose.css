@@ -115,7 +115,8 @@
   margin-bottom: 0;
 }
 
-.prose code {
+.prose code,
+.friend-apply code {
   font-family: var(--font-mono);
   text-autospace: no-autospace;
   font-size: 0.875em;
@@ -124,8 +125,10 @@
   padding: 0.15em 0.4em;
 }
 
-/* Code blocks: shiki dual themes, compact type, pinned line numbers. */
-.prose pre {
+/* Code blocks: shiki dual themes, compact type, pinned line numbers.
+   文章与友链申请页共用同一套样式（.friend-apply）。 */
+.prose pre,
+.friend-apply pre {
   --code-gutter: 3.5em;
   position: relative;
   contain: paint;
@@ -141,24 +144,35 @@
   counter-reset: line;
 }
 
+/* 友链申请页容器字号为 0.875rem，这里把代码块基准对齐到文章的 1rem，
+   使字号、行号 gutter 与文章完全一致。 */
+.friend-apply pre {
+  font-size: 0.875rem;
+}
+
 /* Override shiki's inline background and base color so the block matches
    the theme. Token colors keep their inline light values, and switch to
    the dark variants when the site theme class is active. */
-.prose pre.astro-code {
+.prose pre.astro-code,
+.friend-apply pre.astro-code {
   background-color: var(--c-bg-2) !important;
   color: var(--c-text-1) !important;
 }
 
 html.dark .prose pre.astro-code,
-html.dark .prose pre.astro-code span {
+html.dark .prose pre.astro-code span,
+html.dark .friend-apply pre.astro-code,
+html.dark .friend-apply pre.astro-code span {
   color: var(--shiki-dark, var(--c-text-1)) !important;
 }
 
-.prose pre.astro-code .line {
+.prose pre.astro-code .line,
+.friend-apply pre.astro-code .line {
   counter-increment: line;
 }
 
-.prose pre.astro-code .line::before {
+.prose pre.astro-code .line::before,
+.friend-apply pre.astro-code .line::before {
   content: counter(line);
   position: fixed;
   inset-inline-start: 0;
@@ -172,7 +186,8 @@ html.dark .prose pre.astro-code span {
 }
 
 /* Language badge, shown in the top right corner of the code block. */
-.prose pre.astro-code::after {
+.prose pre.astro-code::after,
+.friend-apply pre.astro-code::after {
   content: attr(data-language);
   position: absolute;
   top: 0.4rem;
@@ -186,7 +201,8 @@ html.dark .prose pre.astro-code span {
   pointer-events: none;
 }
 
-.prose pre code {
+.prose pre code,
+.friend-apply pre code {
   background: none;
   padding: 0;
   font-size: 1em;
@@ -260,6 +276,7 @@ html.dark .prose img {
 }
 
 .prose pre:hover .copy-btn,
+.friend-apply pre:hover .copy-btn,
 .copy-btn:focus-visible {
   opacity: 1;
 }

@@ -153,11 +153,6 @@ const onCover = Boolean(heroImage)
 </html>
 
 <script>
-const labels = {
-  zh: { copy: '复制', copied: '已复制' },
-  en: { copy: 'Copy', copied: 'Copied' },
-}
-
 // Build the table of contents from article headings, inject per-heading
 // anchor links, and highlight the section in view. Rebuilt on every
 // client-side navigation: View Transitions replace the DOM, so all element
@@ -420,42 +415,6 @@ document.addEventListener('astro:page-load', () => {
   buildToc()
   injectHeadingAnchors()
   flashHashHeading()
-  const lang = document.documentElement.lang.startsWith('zh') ? 'zh' : 'en'
-  const { copy, copied } = labels[lang]
-  for (const pre of document.querySelectorAll<HTMLElement>('.prose pre.astro-code')) {
-    if (pre.dataset.copyBtn)
-      continue
-    pre.dataset.copyBtn = 'true'
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'copy-btn'
-    const icon = document.createElement('span')
-    icon.className = 'i-ph-copy copy-icon'
-    const label = document.createElement('span')
-    label.className = 'copy-label'
-    label.textContent = copy
-    btn.append(icon, label)
-    btn.addEventListener('click', async () => {
-      const code = pre.querySelector('code')
-      if (!code)
-        return
-      try {
-        await navigator.clipboard.writeText(code.textContent ?? '')
-      }
-      catch {
-        // Clipboard unavailable; nothing to do.
-      }
-      btn.classList.add('copied')
-      icon.classList.replace('i-ph-copy', 'i-ph-check')
-      label.textContent = copied
-      setTimeout(() => {
-        btn.classList.remove('copied')
-        icon.classList.replace('i-ph-check', 'i-ph-copy')
-        label.textContent = copy
-      }, 1500)
-    })
-    pre.appendChild(btn)
-  }
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.prose a[href^="http"]')) {
     if (a.dataset.external)
       continue

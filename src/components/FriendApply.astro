@@ -23,6 +23,8 @@ const { Content } = await render(entry)
   /* 申请要求排版：颜色/圆角/字体全部取自站点设计令牌，自动跟随主题。 */
   .friend-apply {
     display: grid;
+    /* 显式单列轨道，防止代码块按自身最小宽度撑开页面（横向溢出） */
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.75rem;
     color: var(--c-text-2);
     font-size: 0.875rem;
@@ -31,6 +33,7 @@ const { Content } = await render(entry)
 
   .friend-apply ul {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.35rem;
     margin: 0.4rem 0 0;
     padding-left: 1.4rem;
@@ -45,30 +48,6 @@ const { Content } = await render(entry)
   .friend-apply strong {
     color: var(--c-text-1);
     font-weight: 600;
-  }
-
-  .friend-apply code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background-color: var(--c-bg-3);
-    border-radius: 4px;
-    padding: 0.15em 0.4em;
-  }
-
-  .friend-apply pre {
-    margin: 0.6rem 0 0.15rem;
-    padding: 0.9rem 1rem;
-    overflow-x: auto;
-    background-color: var(--c-bg-2);
-    border: 1px solid var(--c-border);
-    border-radius: 10px;
-  }
-
-  .friend-apply pre code {
-    background: none;
-    padding: 0;
-    font-size: 0.8125rem;
-    line-height: 1.7;
   }
 
   .friend-apply a {
