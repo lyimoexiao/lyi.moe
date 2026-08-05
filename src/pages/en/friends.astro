@@ -1,12 +1,13 @@
 ---
 import BaseHead from '../../components/BaseHead.astro'
 import Footer from '../../components/Footer.astro'
-import FriendImage from '../../components/FriendImage.astro'
+import FriendApply from '../../components/FriendApply.astro'
+import FriendGroup from '../../components/FriendGroup.astro'
 import Header from '../../components/Header.astro'
 import Twikoo from '../../components/Twikoo.astro'
 import { siteDescription, siteTitle, twikooConfig } from '../../config'
 import { getLocale, useTranslations } from '../../i18n/ui'
-import { friends } from '../../lib/friends'
+import { feeds } from '../../lib/feed'
 
 const locale = getLocale(Astro.currentLocale)
 const t = useTranslations(locale)
@@ -23,58 +24,12 @@ const t = useTranslations(locale)
 			<div class="mx-auto max-w-3xl">
 				<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('nav.friends')}</h1>
 				<hr class="my-8 border-base" />
-				<ul class="gap-3 grid sm:grid-cols-2">
-					{
-						friends.map(friend => (
-							<li class="relative">
-								<a
-  href={friend.link}
-  target="_blank"
-  class:list={[
-    'group p-4 border border-base rounded-lg block transition-colors hover:border-active hover:bg-active',
-    friend.feed && 'pr-12',
-  ]}
-								>
-									<span class="flex gap-3 items-center">
-										<FriendImage
-  src={friend.avatar}
-  alt=""
-  width={40}
-  height={40}
-  wrapClass="img-outline rounded-full shrink-0 h-10 w-10"
-										/>
-										<span class="flex flex-col min-w-0">
-											<span class="font-600 flex gap-1.5 items-center">
-												<FriendImage
-  src={friend.icon}
-  alt=""
-  width={14}
-  height={14}
-  wrapClass="rounded-sm op-60 shrink-0 h-3.5 w-3.5"
-												/>
-												<span class="truncate">{friend.author}</span>
-											</span>
-											<span class="text-sm op-fade truncate">{friend.desc}</span>
-										</span>
-									</span>
-								</a>
-																{
-									friend.feed && (
-										<a
-  href={friend.feed}
-  target="_blank"
-  class="rounded op-fade inline-flex h-8 w-8 tap-scale transition-colors items-center right-3 top-3 justify-center absolute hover:color-[#fbbf24] hover:bg-[#fbbf24]/12 hover:op100"
-  aria-label={t('rss.feed')}
-  title={t('rss.feed')}
-										>
-											<span class="i-ph-rss" />
-										</a>
-									)
-								}
-							</li>
-						))
-					}
-				</ul>
+				{
+					feeds.map(group => (
+						<FriendGroup group={group} />
+					))
+				}
+				<FriendApply />
 				{twikooConfig.envId && <Twikoo path="/friends" />}
 			</div>
 		</main>

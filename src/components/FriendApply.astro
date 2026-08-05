@@ -1,0 +1,239 @@
+---
+// 友链页底部的“申请友链”要求，中英文内容在这里保持对齐。
+// 只有“复制邮箱”依赖一小段脚本（View Transitions 下可重复初始化）；
+// 其余全部为静态渲染，不依赖 JS。
+import { getLocale } from '../i18n/ui'
+
+const isEn = getLocale(Astro.currentLocale) === 'en'
+---
+
+<section class="mt-14 pt-8 border-t border-base" aria-labelledby="friend-apply-title">
+	<h2 id="friend-apply-title" class="font-title text-xl font-600">
+		{isEn ? 'Apply for a friend link' : '申请友链'}
+	</h2>
+
+	{
+		isEn
+			? (
+			<ul class="friend-apply mt-4">
+				<li>
+					<strong>Requirements:</strong> generally consistent with most independent blogs
+					<ul>
+						<li>Maintained long-term, publishing <strong>valuable original content</strong></li>
+						<li>Links are not inserted via JavaScript, with no <code>nofollow</code> / <code>noopener</code> attributes.</li>
+						<li>Corporate, tool, or other non-personal sites are not accepted for now.</li>
+						<li>The site must be legal and compliant — no pornographic, violent, gambling, or reactionary content.</li>
+						<li>The site should be well organized, with no indiscriminate content scraping.</li>
+						<li>You may also refer to the rules on the <a href="https://www.travellings.cn/docs/join.html" target="_blank" rel="noopener noreferrer">Travellings join page</a>.</li>
+					</ul>
+				</li>
+				<li>
+					<strong>How to apply:</strong> leave a comment below, or email
+					<a class="friend-copy" href="mailto:hi@zhilu.cyou" data-copy="hi@zhilu.cyou" data-copied="Copied" aria-label="Copy email address: hi@zhilu.cyou" title="Copy email address"><span class="friend-copy-icon" aria-hidden="true" />hi@zhilu.cyou</a>
+					<ul>
+						<li>Subject line: <code>Friend link request: your nickname</code></li>
+						<li>Attach your link info in <span class="tip" data-tip="URL, natural language, or programming language" tabindex="0">any form</span>, e.g.
+							<pre><code>{['export default {', '    // Fill in a single entry object from feed.ts', '} satisfies Friend'].join('\n')}</code></pre>
+						</li>
+					</ul>
+				</li>
+				<li>Your info may be slightly adjusted for better presentation.</li>
+			</ul>
+		)
+		: (
+			<ul class="friend-apply mt-4">
+				<li>
+					<strong>申请要求：</strong>原则上与多数独立博客的友链要求一致
+					<ul>
+						<li>能够<strong>长期更新维护</strong>，并输出<strong>有价值的原创内容</strong></li>
+						<li>友链非 JavaScript 插入，无 <code>nofollow</code> / <code>noopener</code> 这类信息。</li>
+						<li>暂不收录企业、工具类等非个人站点。</li>
+						<li>网站合法合规，无色情、暴力、博彩、反动等内容。</li>
+						<li>网站内容安排有序，无胡乱采集现象。</li>
+						<li>可以参考 <a href="https://www.travellings.cn/docs/join.html" target="_blank" rel="noopener noreferrer">加入开往</a> 页面的规则</li>
+					</ul>
+				</li>
+				<li>
+					<strong>申请方式：</strong>在评论区留言或发送邮件到
+					<a class="friend-copy" href="mailto:hi@zhilu.cyou" data-copy="hi@zhilu.cyou" data-copied="已复制" aria-label="复制邮箱地址：hi@zhilu.cyou" title="复制邮箱地址"><span class="friend-copy-icon" aria-hidden="true" />hi@zhilu.cyou</a>
+					<ul>
+						<li>标题注明 <code>友链申请: 你的昵称</code></li>
+						<li>以 <span class="tip" data-tip="指向信息的 URL、自然语言、编程语言" tabindex="0">任意形式</span> 附上友链信息
+							<pre><code>{['export default {', '    // 补全为 feed.ts 中单项的对象', '} satisfies Friend'].join('\n')}</code></pre>
+						</li>
+					</ul>
+				</li>
+				<li>信息可能会被适当修改，以保证展示效果</li>
+			</ul>
+		)
+	}
+</section>
+
+<style is:global>
+  /* 申请要求排版：颜色/圆角/字体全部取自站点设计令牌，自动跟随主题。 */
+  .friend-apply {
+    --friend-copy-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23000' d='M216 32H88a8 8 0 0 0-8 8v40H40a8 8 0 0 0-8 8v128a8 8 0 0 0 8 8h128a8 8 0 0 0 8-8v-40h40a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8m-56 176H48V96h112Zm48-48h-32V88a8 8 0 0 0-8-8H96V48h112Z'/%3E%3C/svg%3E");
+    --friend-check-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23000' d='m229.66 77.66-128 128a8 8 0 0 1-11.32 0l-56-56a8 8 0 0 1 11.32-11.32L96 188.69 218.34 66.34a8 8 0 0 1 11.32 11.32'/%3E%3C/svg%3E");
+    display: grid;
+    gap: 0.75rem;
+    color: var(--c-text-2);
+    font-size: 0.875rem;
+    line-height: 1.75;
+  }
+
+  .friend-apply ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0;
+    padding-left: 1.4rem;
+    list-style: disc;
+  }
+
+  .friend-apply ul ul {
+    list-style: circle;
+    margin-top: 0.35rem;
+  }
+
+  .friend-apply strong {
+    color: var(--c-text-1);
+    font-weight: 600;
+  }
+
+  .friend-apply code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background-color: var(--c-bg-3);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+  }
+
+  .friend-apply pre {
+    margin: 0.6rem 0 0.15rem;
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    background-color: var(--c-bg-2);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+  }
+
+  .friend-apply pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+
+  .friend-apply a {
+    color: var(--c-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--c-accent-text) 35%, transparent);
+    transition: opacity 0.2s;
+  }
+
+  .friend-apply a:hover {
+    opacity: 0.75;
+  }
+
+  /* 邮箱复制：虚线描边 + 小图标；复制成功后图标切换为对勾 */
+  .friend-apply .friend-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    margin: 0 0.15em;
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in srgb, var(--c-accent-text) 45%, transparent);
+  }
+
+  .friend-copy-icon {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask: var(--friend-copy-icon) center / contain no-repeat;
+    mask: var(--friend-copy-icon) center / contain no-repeat;
+  }
+
+  .friend-copy.copied .friend-copy-icon {
+    -webkit-mask: var(--friend-check-icon) center / contain no-repeat;
+    mask: var(--friend-check-icon) center / contain no-repeat;
+  }
+
+  /* :tip 标注：悬浮/聚焦时显示说明气泡，纯 CSS 实现 */
+  .friend-apply .tip {
+    position: relative;
+    color: var(--c-text-1);
+    border-bottom: 1px dotted var(--c-text-3);
+    cursor: help;
+    outline: none;
+  }
+
+  .friend-apply .tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.5rem);
+    z-index: 20;
+    width: max-content;
+    max-width: 17rem;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+    background-color: var(--c-bg-3);
+    color: var(--c-text-1);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(4px);
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .friend-apply .tip:hover::after,
+  .friend-apply .tip:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<script>
+// 点击复制邮箱；无剪贴板权限（如非安全上下文）时回退到 mailto 链接。
+// View Transitions 换页后会重新扫描新文档中的按钮，每个按钮只初始化一次。
+;(() => {
+  const init = () => {
+    document.querySelectorAll<HTMLAnchorElement>('a[data-copy]').forEach((el) => {
+      if (el.dataset.copyInit)
+        return
+      el.dataset.copyInit = '1'
+      const text = el.dataset.copy ?? ''
+      const copiedLabel = el.dataset.copied ?? 'Copied'
+      const originalLabel = el.getAttribute('aria-label') ?? ''
+      el.addEventListener('click', (event) => {
+        if (!text)
+          return
+        event.preventDefault()
+        const done = () => {
+          el.classList.add('copied')
+          el.setAttribute('aria-label', copiedLabel)
+          window.setTimeout(() => {
+            el.classList.remove('copied')
+            el.setAttribute('aria-label', originalLabel)
+          }, 1600)
+        }
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(done).catch(() => {
+            window.location.href = el.href
+          })
+        }
+        else {
+          window.location.href = el.href
+        }
+      })
+    })
+  }
+  document.addEventListener('astro:page-load', init)
+  init()
+})()
+</script>

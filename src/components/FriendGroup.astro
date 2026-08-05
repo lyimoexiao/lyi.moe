@@ -1,0 +1,210 @@
+---
+// 友链分组：移植 blog-v3 FeedGroup.vue 的样式——描边大字吸顶标题
+// （feed-title）、居中描述，以及紧凑的 feed-card 列表（无卡片边框，
+// 悬浮上移 + 按链接 hash 计算的入场浮动延迟）。全部纯 CSS，无 JS。
+import type { FeedGroup } from '../lib/feed'
+import { getLocale, useTranslations } from '../i18n/ui'
+import { groupDesc, groupName } from '../lib/feed'
+import FriendImage from './FriendImage.astro'
+
+interface Props {
+  group: FeedGroup
+}
+
+const { group } = Astro.props
+const locale = getLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const name = groupName(group, locale)
+const desc = groupDesc(group, locale)
+
+/** 与 blog-v3 相同的延迟算法：由链接 hash 得到 0–1s 的入场延迟。 */
+function cardDelay(link: string): string {
+  let hash = 0
+  for (const char of link)
+    hash = hash * 31 + char.charCodeAt(0)
+  return `${(hash % 1000) / 1000}s`
+}
+---
+
+<section class="feed-group">
+	<h2 class="feed-title">{name}</h2>
+	{desc && <p class="feed-desc">{desc}</p>}
+	<ul class="feed-list">
+		{
+			group.entries.map(friend => (
+				<li class="feed-item" style={`--delay:${cardDelay(friend.link)}`}>
+					<div class="feed-card">
+						<a class="feed-card-main" href={friend.link} target="_blank" rel="noopener noreferrer">
+							<FriendImage
+  src={friend.avatar}
+  alt=""
+  width={40}
+  height={40}
+  wrapClass="feed-avatar"
+							/>
+							<span class="feed-card-body">
+								<span class="feed-card-author">{friend.author}</span>
+								<span class="feed-card-desc">{friend.desc}</span>
+							</span>
+						</a>
+						{
+							friend.feed && (
+								<a
+  class="feed-rss"
+  href={friend.feed}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label={t('rss.feed')}
+  title={t('rss.feed')}
+								>
+									<span class="i-ph-rss" />
+								</a>
+							)
+						}
+					</div>
+				</li>
+			))
+		}
+	</ul>
+</section>
+
+<style>
+  /* 分组：标题吸顶在站点 header 下方（h-14 = 3.5rem） */
+  .feed-group {
+    margin-top: 2.5rem;
+  }
+
+  .feed-title {
+    position: sticky;
+    top: 3.5rem;
+    z-index: 1;
+    margin-bottom: -0.3em;
+    opacity: 0.55;
+    font-weight: 700;
+    line-height: 1;
+    text-align: left;
+    color: transparent;
+    letter-spacing: 0.02em;
+    -webkit-text-stroke: 1px var(--c-text-3);
+    -webkit-mask-image: linear-gradient(#fff 55%, transparent);
+    mask-image: linear-gradient(#fff 55%, transparent);
+    transition: color 0.2s;
+  }
+
+  .feed-title:hover {
+    color: var(--c-text-3);
+  }
+
+  .feed-title::selection {
+    color: var(--c-text-3);
+  }
+
+  .feed-desc {
+    margin-top: 0.2em;
+    text-align: left;
+    color: var(--c-text-2);
+    font-size: 0.875rem;
+  }
+
+  /* 列表：与 blog-v3 相同的 auto-fill 网格，卡片在单元格内居中 */
+  .feed-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
+    gap: 0.35em 0.5em;
+    margin-top: 1.5em;
+  }
+
+  /* 卡片：无边框盒子，紧凑排布，悬浮上移 */
+  .feed-item {
+    animation: float-in 0.2s var(--delay) backwards;
+  }
+
+  .feed-card {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    width: 15em;
+    margin: 0 auto;
+    padding: 0.5em 0.4em;
+    line-height: 1.4;
+    transition: transform 0.2s;
+  }
+
+  .feed-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .feed-card-main {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .feed-avatar {
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  }
+
+  .feed-card-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .feed-card-author {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-text-1);
+    font-weight: 500;
+  }
+
+  .feed-card-desc {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-text-3);
+    font-size: 0.8em;
+  }
+
+  .feed-rss {
+    flex: none;
+    padding: 0.35em;
+    border-radius: 6px;
+    color: var(--c-text-3);
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .feed-rss:hover {
+    color: #fbbf24;
+    background-color: rgb(251 191 36 / 12%);
+  }
+
+  @keyframes float-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feed-item {
+      animation: none;
+    }
+
+    .feed-card {
+      transition: none;
+    }
+  }
+</style>
