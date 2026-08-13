@@ -3,7 +3,7 @@ title: '为鸿蒙手搓一个图片预览器'
 description: '为鸿蒙（HarmonyOS）手搓图片预览组件的翻车实录：弹层、手势大战、调参玄学，以及最终代码。'
 pubDate: 2026-08-06 02:43:04
 category: '技术'
-heroImage: './images/build-a-photo-previewr-for-ohos-cover.png'
+heroImage: './images/cover-arkui.png'
 ---
 
 > 前言：这几天在碰 HarmonyOS 的 ArkUI，做到图片预览时发现当前版本没有现成的 ImageViewer，只能自己搓。本文记录搓的过程、翻的车和最终代码。
