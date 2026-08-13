@@ -193,6 +193,10 @@ import { animate } from 'animejs'
   let zoomImages: HTMLImageElement[] = []
   let zoomIndex = 0
   const zoomState = { slideX: 0, tx: 0, ty: 0, s: 1, r: 0, opacity: 1 }
+  // 旋转意图（90° 的整数倍）：与补间中的 zoomState.r（中间值）分离，
+  // 快速连点旋转时每次取消补间再以意图为终点，r 最终必然落在 90° 倍数上，
+  // 不会因中途值累积而歪斜
+  let zoomQuad = 0
   let zoomAnim: ReturnType<typeof animate> | null = null
   let zoomDragging = false
   let zoomPX = 0
@@ -270,6 +274,22 @@ import { animate } from 'animejs'
       },
     })
   }
+  // 旋转：每次点击累加 90° 意图，从当前动画状态（可能是中途值）补间到
+  // 意图角度 —— 连点再快，终点都是 90° 的整数倍
+  const rotateBy = (dir: number) => {
+    zoomQuad += dir
+    zoomAnim?.cancel()
+    tweenState({
+      s: zoomState.s,
+      r: zoomQuad * 90,
+      duration: 250,
+      ease: 'outCubic',
+      onComplete: () => {
+        clamp()
+        paint()
+      },
+    })
+  }
   // 以视口坐标 (px, py) 为锚点缩放到 newS：图片上该锚点保持在光标/指尖下不动。
   // 旋转时退化为中心缩放（锚点数学在旋转下不成立）。
   const zoomToPoint = (px: number, py: number, newS: number) => {
@@ -328,6 +348,7 @@ import { animate } from 'animejs'
     zoomState.ty = 0
     zoomState.s = 1
     zoomState.r = 0
+    zoomQuad = 0
     zoomState.opacity = 1
     // 有说明文字时压缩图片高度，给底部工具栏让位
     zoomOverlay!.classList.toggle('has-caption', !caption.hidden)
@@ -383,6 +404,11 @@ import { animate } from 'animejs'
     // 到达原位置瞬间遮罩消失、无缝衔接文章里的图片。
     const fly = to && to.width > 0 && nw && nh
     if (fly) {
+      // 归一化旋转：多次旋转后 r 会累计超过 360°（视觉等价于 r % 360），
+      // 若直接补间到 0，anime 按数值插值会让图片在飞回时如陀螺般再转
+      // 一整圈；先归位到等价角度，视觉无变化且补间无旋转
+      zoomState.r = ((zoomState.r % 360) + 360) % 360
+      zoomQuad = 0
       const vw = innerWidth
       const vh = innerHeight
       // 同时归位 slideX / opacity：切换动画中途关闭时图片也落在正确终点
@@ -602,20 +628,21 @@ import { animate } from 'animejs'
     else {
       const action = (target.closest<HTMLButtonElement>('.zoom-tool'))?.dataset.action
       if (action === 'zoom-in') {
-        setTransform(Math.min(zoomState.s * 2, 7), zoomState.r)
+        setTransform(Math.min(zoomState.s * 2, 7), zoomQuad * 90)
       }
       else if (action === 'zoom-out') {
-        setTransform(Math.max(zoomState.s / 2, 0.2), zoomState.r)
+        setTransform(Math.max(zoomState.s / 2, 0.2), zoomQuad * 90)
       }
       else if (action === 'rotate-l') {
-        setTransform(zoomState.s, zoomState.r - 90)
+        rotateBy(-1)
       }
       else if (action === 'rotate-r') {
-        setTransform(zoomState.s, zoomState.r + 90)
+        rotateBy(1)
       }
       else if (action === 'reset') {
         zoomState.tx = 0
         zoomState.ty = 0
+        zoomQuad = 0
         setTransform(1, 0)
       }
     }
