@@ -49,9 +49,12 @@ applyTheme()
 </script>
 
 <script>
+import { animate } from 'animejs'
 // `code`{copy} 复制按钮：点击把 data-copy 文本写入剪贴板，成功后短暂显示对勾。
 // 无 Clipboard API（如非安全上下文）时回退 execCommand；View Transitions 换页后重新扫描。
-;(() => {
+;
+
+(() => {
   async function copyText(text: string) {
     if (navigator.clipboard?.writeText) {
       try {
@@ -170,10 +173,524 @@ applyTheme()
       operations.appendChild(btn)
     }
   }
+  // 图片放大预览：参考 Element Plus el-image 的查看器交互。点击 .prose 图片
+  // 打开全屏查看器，当前文章的所有图片组成列表：
+  // - 切换：左右按钮 / 方向键；图片点击不切换（点击让位给拖拽平移）
+  // - 缩放：按钮（×2）/ 滚轮与触摸板（光标锚点）/ 触摸板捏合与触屏双指捏合
+  //   （连续、锚点为光标/两指中点），范围 0.2–7 倍（el-image 默认）
+  // - 平移：放大/旋转后拖拽图片（Pointer Events，鼠标与触屏通用），限位防拖出屏幕
+  // - 旋转：左右各 90°；关闭：遮罩 / 右上角按钮 / Esc
+  // 动画统一用 anime.js（入场放大、切换平移、缩放旋转补间、遮罩淡入淡出、
+  // 关闭时飞回文章原位置），遮罩自身不再依赖 CSS 过渡。
+  // 注意：页面脚本只在首次加载执行一次，事件监听器必须在模块作用域注册一次；
+  // 每次 astro:page-load 换页后 body 被整体替换，动态 overlay 会脱离 DOM，需要
+  // 重新查询（null 时下次打开重建），否则预览器会在换页后静默失效。
+  const zh = document.documentElement.lang.startsWith('zh')
+  const labels = zh
+    ? { zoomIn: '放大', zoomOut: '缩小', reset: '原始大小', rotateL: '向左旋转', rotateR: '向右旋转', prev: '上一张', next: '下一张', close: '关闭预览' }
+    : { zoomIn: 'Zoom in', zoomOut: 'Zoom out', reset: 'Actual size', rotateL: 'Rotate left', rotateR: 'Rotate right', prev: 'Previous', next: 'Next', close: 'Close preview' }
+  let zoomOverlay: HTMLDivElement | null = null
+  let zoomImages: HTMLImageElement[] = []
+  let zoomIndex = 0
+  const zoomState = { slideX: 0, tx: 0, ty: 0, s: 1, r: 0, opacity: 1 }
+  let zoomAnim: ReturnType<typeof animate> | null = null
+  let zoomDragging = false
+  let zoomPX = 0
+  let zoomPY = 0
+  const zoomPointers = new Map<number, { x: number, y: number }>()
+  let zoomPinchDist = 0
+  let zoomPinchScale = 1
+  let zoomLastTap = 0
+  let zoomLastTapX = 0
+  let zoomLastTapY = 0
+  let zoomWheelLast = 0
+  let zoomWheelPan = false
+  const zoomReduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const isMac = navigator.platform.toLowerCase().includes('mac')
+    || (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform?.toLowerCase().includes('mac')
+
+  const zoomImg = () => zoomOverlay!.querySelector<HTMLImageElement>('.zoom-img')!
+  const zoomStage = () => zoomOverlay!.querySelector<HTMLElement>('.zoom-stage')!
+  const zoomMask = () => zoomOverlay!.querySelector<HTMLElement>('.zoom-mask')!
+  const paint = () => {
+    // transform 作用在 stage 上，description 与图片作为一个整体变换
+    zoomStage().style.transform = `translate3d(${zoomState.tx + zoomState.slideX}px, ${zoomState.ty}px, 0) scale(${zoomState.s}) rotate(${zoomState.r}deg)`
+    zoomImg().style.opacity = String(zoomState.opacity)
+    zoomOverlay!.classList.toggle('pannable', zoomState.s !== 1 || zoomState.r % 360 !== 0)
+  }
+  // 平移限位：图片边缘不能越过视口对应边缘（旋转后宽高互换），保证图不丢
+  const clamp = () => {
+    const { naturalWidth: nw, naturalHeight: nh } = zoomImg()
+    if (!nw || !nh)
+      return
+    const rotated = Math.abs(zoomState.r) % 180 !== 0
+    const w = (rotated ? nh : nw) * zoomState.s
+    const h = (rotated ? nw : nh) * zoomState.s
+    const mx = Math.max(0, (w - innerWidth) / 2)
+    const my = Math.max(0, (h - innerHeight) / 2)
+    zoomState.tx = Math.min(Math.max(zoomState.tx, -mx), mx)
+    zoomState.ty = Math.min(Math.max(zoomState.ty, -my), my)
+  }
+  // 查看器里图片的实际显示比例：与 CSS 约束一致——max-width 是
+  // min(94vw, 内容宽 vw-4rem)，max-height 有说明文字时让位到 70vh，
+  // 否则 82vh。入场落点与飞回终点只有用同一公式才能与文章图片完全重合。
+  const displayF = (nw: number, nh: number) => {
+    const vw = innerWidth
+    const vh = innerHeight
+    const maxH = zoomOverlay!.classList.contains('has-caption') ? 70 : 82
+    return Math.min(1, Math.min(94 * vw / 100, vw - 64) / nw, (maxH * vh / 100) / nh)
+  }
+  // 统一的 zoomState 补间入口：动画完成（非取消）后清空 zoomAnim 忙等标记，
+  // 否则后续切换/缩放全部被 slideTo 的守卫挡住（上一版的死锁根因）。
+  const tweenState = (props: Parameters<typeof animate>[1]) => {
+    const { onComplete, ...rest } = props
+    const a = animate(zoomState, {
+      ...rest,
+      onUpdate: paint,
+      onComplete: (self) => {
+        if (zoomAnim === a)
+          zoomAnim = null
+        onComplete?.(self)
+      },
+    })
+    zoomAnim = a
+    return a
+  }
+  // 缩放/旋转补间：250ms 完成后再限位（限位按最终尺寸计算，避免动画中途跳变）
+  const setTransform = (s: number, r: number) => {
+    zoomAnim?.cancel()
+    tweenState({
+      s,
+      r,
+      duration: 250,
+      ease: 'outCubic',
+      onComplete: () => {
+        clamp()
+        paint()
+      },
+    })
+  }
+  // 以视口坐标 (px, py) 为锚点缩放到 newS：图片上该锚点保持在光标/指尖下不动。
+  // 旋转时退化为中心缩放（锚点数学在旋转下不成立）。
+  const zoomToPoint = (px: number, py: number, newS: number) => {
+    if (zoomState.r % 360 !== 0)
+      return null
+    const vw = innerWidth
+    const vh = innerHeight
+    const k = newS / zoomState.s
+    return {
+      tx: (px - vw / 2) * (1 - k) + zoomState.tx * k,
+      ty: (py - vh / 2) * (1 - k) + zoomState.ty * k,
+    }
+  }
+  const zoomAtPoint = (px: number, py: number, newS: number) => {
+    const target = zoomToPoint(px, py, newS)
+    if (target) {
+      zoomState.tx = target.tx
+      zoomState.ty = target.ty
+    }
+    zoomState.s = newS
+    clamp()
+    paint()
+  }
+  // 触摸屏双击：1:1 时以点按位置放大到 2 倍（anime.js 补间），
+  // 放大/旋转时复位回居中 1:1
+  const handleDoubleTap = (x: number, y: number) => {
+    if (zoomAnim)
+      return
+    const reset = zoomState.r % 360 !== 0 || zoomState.s !== 1
+    const target = reset ? null : zoomToPoint(x, y, 2)
+    tweenState({
+      tx: target?.tx ?? 0,
+      ty: target?.ty ?? 0,
+      s: reset ? 1 : 2,
+      duration: 300,
+      ease: 'outCubic',
+      onComplete: () => {
+        clamp()
+        paint()
+      },
+    })
+  }
+  const apply = (slideFrom = 0) => {
+    const img = zoomImages[zoomIndex]
+    const zi = zoomImg()
+    zi.src = img.currentSrc || img.src
+    zi.alt = img.alt
+    const caption = zoomOverlay!.querySelector<HTMLElement>('.zoom-caption')!
+    caption.hidden = !img.alt
+    caption.textContent = img.alt
+    zoomOverlay!.querySelectorAll<HTMLElement>('.zoom-nav').forEach((b) => {
+      b.style.display = zoomImages.length > 1 ? '' : 'none'
+    })
+    zoomState.slideX = slideFrom
+    zoomState.tx = 0
+    zoomState.ty = 0
+    zoomState.s = 1
+    zoomState.r = 0
+    zoomState.opacity = 1
+    // 有说明文字时压缩图片高度，给底部工具栏让位
+    zoomOverlay!.classList.toggle('has-caption', !caption.hidden)
+    paint()
+  }
+  // 切换平移动画（anime.js）：当前图滑出 + 淡出，换 src 后新图从对面滑入。
+  // 第二阶段开始时图在屏幕外，opacity 直接复位不可见地完成。
+  const slideTo = (dir: number) => {
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open') || zoomImages.length < 2 || zoomAnim)
+      return
+    const out = dir * innerWidth
+    if (zoomReduceMotion) {
+      zoomIndex = (zoomIndex + dir + zoomImages.length) % zoomImages.length
+      apply()
+      return
+    }
+    tweenState({
+      slideX: -out,
+      opacity: 0,
+      duration: 200,
+      ease: 'inQuad',
+      onComplete: () => {
+        zoomIndex = (zoomIndex + dir + zoomImages.length) % zoomImages.length
+        apply(out)
+        tweenState({ slideX: 0, opacity: 1, duration: 300, ease: 'outCubic' })
+      },
+    })
+  }
+  const hideOverlay = () => {
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open'))
+      return
+    zoomOverlay.classList.remove('open', 'closing')
+    zoomOverlay.style.display = 'none'
+    // 保留关闭淡出后的 mask opacity 0，下次打开从 0 淡入
+  }
+  const closeZoom = () => {
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open'))
+      return
+    zoomAnim?.cancel()
+    zoomAnim = null
+    zoomOverlay.classList.add('closing')
+    if (zoomReduceMotion) {
+      hideOverlay()
+      return
+    }
+    const zi = zoomImg()
+    const to = zoomImages[zoomIndex]?.getBoundingClientRect()
+    const nw = zi.naturalWidth
+    const nh = zi.naturalHeight
+    // 飞回文章原位置（el-image 风格）：任意缩放/旋转状态都执行——
+    // 补间同时把 s 缩回原尺寸、r 归零，图片边缩小/回正边飞回原位。
+    // 背景（.zoom-mask）延迟到飞行后期才开始淡出——图片本身不透明飞回，
+    // 到达原位置瞬间遮罩消失、无缝衔接文章里的图片。
+    const fly = to && to.width > 0 && nw && nh
+    if (fly) {
+      const vw = innerWidth
+      const vh = innerHeight
+      // 同时归位 slideX / opacity：切换动画中途关闭时图片也落在正确终点
+      const flight = animate(zoomState, {
+        tx: to.left + to.width / 2 - vw / 2,
+        ty: to.top + to.height / 2 - vh / 2,
+        s: to.width / (nw * displayF(nw, nh)),
+        r: 0,
+        slideX: 0,
+        opacity: 1,
+        duration: 400,
+        ease: 'inCubic',
+        onUpdate: paint,
+      })
+      const fade = animate(zoomMask(), { opacity: 0, duration: 240, delay: 180, ease: 'inCubic' })
+      flight.then(() => hideOverlay())
+      fade.then(() => hideOverlay())
+    }
+    else {
+      animate(zoomState, { opacity: 0, duration: 200, ease: 'inCubic', onUpdate: paint })
+      animate(zoomMask(), { opacity: 0, duration: 200, ease: 'inCubic' }).then(() => hideOverlay())
+    }
+  }
+  const openZoom = (img: HTMLImageElement) => {
+    zoomImages = [...document.querySelectorAll<HTMLImageElement>('.prose img')]
+    zoomIndex = zoomImages.indexOf(img)
+    if (zoomIndex < 0)
+      return
+    zoomAnim?.cancel()
+    zoomAnim = null
+    zoomPointers.clear()
+    zoomPinchDist = 0
+    if (!zoomOverlay) {
+      zoomOverlay = document.createElement('div')
+      zoomOverlay.className = 'z-zoom'
+      zoomOverlay.setAttribute('role', 'dialog')
+      zoomOverlay.setAttribute('aria-modal', 'true')
+      const mask = document.createElement('div')
+      mask.className = 'zoom-mask'
+      const stage = document.createElement('div')
+      stage.className = 'zoom-stage'
+      const zi = document.createElement('img')
+      zi.className = 'zoom-img'
+      zi.draggable = false
+      // 指针事件挂在 overlay 上：两指可能落点不同（图片/说明/遮罩），
+      // overlay 铺满全屏、touch-action 为 none，指针移动必然送达 overlay，
+      // 无需 setPointerCapture（捕获会让 click 目标变成 overlay，按钮全失效）。
+      // 单指按在图片上 = 平移；双指 = 捏合缩放（以两指中点为锚点）。
+      zoomOverlay.addEventListener('pointerdown', (e) => {
+        if (!zoomOverlay || !zoomOverlay.classList.contains('open'))
+          return
+        zoomPointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+        if (zoomPointers.size === 2) {
+          // 捏合开始：清除点按记录，避免捏合收尾被误判为双击
+          zoomLastTap = 0
+          zoomDragging = false
+          zoomOverlay.classList.remove('panning')
+          const [a, b] = [...zoomPointers.values()]
+          zoomPinchDist = Math.max(Math.hypot(a.x - b.x, a.y - b.y), 1)
+          zoomPinchScale = zoomState.s
+        }
+        else if (zoomPointers.size === 1 && e.target instanceof Element && e.target.closest('.zoom-stage')) {
+          zoomDragging = true
+          zoomPX = e.clientX
+          zoomPY = e.clientY
+          zoomOverlay.classList.add('panning')
+        }
+      })
+      zoomOverlay.addEventListener('pointermove', (e) => {
+        if (zoomPointers.size === 0)
+          return
+        zoomPointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+        if (zoomPointers.size === 2) {
+          if (zoomAnim)
+            return
+          const [a, b] = [...zoomPointers.values()]
+          const dist = Math.hypot(a.x - b.x, a.y - b.y)
+          if (dist > 0 && zoomPinchDist > 0) {
+            const s = Math.min(Math.max(zoomPinchScale * (dist / zoomPinchDist), 0.2), 7)
+            if (s !== zoomState.s)
+              zoomAtPoint((a.x + b.x) / 2, (a.y + b.y) / 2, s)
+          }
+          return
+        }
+        if (!zoomDragging)
+          return
+        const dx = e.clientX - zoomPX
+        const dy = e.clientY - zoomPY
+        zoomPX = e.clientX
+        zoomPY = e.clientY
+        // 有位移的拖拽不算点按
+        if (Math.abs(dx) + Math.abs(dy) > 3)
+          zoomLastTap = 0
+        zoomState.tx += dx
+        zoomState.ty += dy
+        clamp()
+        paint()
+      })
+      const endZoomPointer = (e: PointerEvent) => {
+        zoomPointers.delete(e.pointerId)
+        if (zoomPointers.size < 2)
+          zoomPinchDist = 0
+        if (zoomPointers.size === 0) {
+          zoomDragging = false
+          zoomOverlay?.classList.remove('panning')
+          // 触摸屏双击：图片上 300ms 内、位移 30px 内的两次点按 → 缩放切换
+          if (e.pointerType === 'touch' && e.target instanceof Element && e.target.closest('.zoom-stage')) {
+            const now = performance.now()
+            if (now - zoomLastTap < 300 && Math.hypot(e.clientX - zoomLastTapX, e.clientY - zoomLastTapY) < 30) {
+              zoomLastTap = 0
+              handleDoubleTap(e.clientX, e.clientY)
+            }
+            else {
+              zoomLastTap = now
+              zoomLastTapX = e.clientX
+              zoomLastTapY = e.clientY
+            }
+          }
+        }
+        else if (zoomPointers.size === 1 && zoomDragging) {
+          // 捏合结束剩一指：以它为平移起点继续拖
+          const [a] = [...zoomPointers.values()]
+          zoomPX = a.x
+          zoomPY = a.y
+        }
+      }
+      zoomOverlay.addEventListener('pointerup', endZoomPointer)
+      zoomOverlay.addEventListener('pointercancel', endZoomPointer)
+      const caption = document.createElement('figcaption')
+      caption.className = 'zoom-caption'
+      const make = (cls: string, action: string, icon: string, label: string) => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.className = cls
+        b.dataset.action = action
+        b.setAttribute('aria-label', label)
+        const s = document.createElement('span')
+        s.className = icon
+        s.setAttribute('aria-hidden', 'true')
+        b.append(s)
+        return b
+      }
+      const toolbar = document.createElement('div')
+      toolbar.className = 'zoom-toolbar'
+      toolbar.append(
+        make('zoom-tool', 'zoom-in', 'i-ph-magnifying-glass-plus', labels.zoomIn),
+        make('zoom-tool', 'zoom-out', 'i-ph-magnifying-glass-minus', labels.zoomOut),
+        make('zoom-tool', 'reset', 'i-ph-arrows-out', labels.reset),
+        make('zoom-tool', 'rotate-l', 'i-ph-arrow-counter-clockwise', labels.rotateL),
+        make('zoom-tool', 'rotate-r', 'i-ph-arrow-clockwise', labels.rotateR),
+      )
+      zoomOverlay.append(
+        mask,
+        stage,
+        make('zoom-nav zoom-prev', 'prev', 'i-ph-arrow-left', labels.prev),
+        make('zoom-nav zoom-next', 'next', 'i-ph-arrow-right', labels.next),
+        toolbar,
+        make('zoom-close', 'close', 'i-ph-x', labels.close),
+      )
+      stage.append(zi, caption)
+      document.body.append(zoomOverlay)
+    }
+    // 关闭流程会把 display 置回 none，重新打开必须先恢复，否则遮罩不可见
+    zoomOverlay.style.display = 'flex'
+    apply()
+    // el-image 同款入场：图片加载完成后，从点击位置放大到居中（anime.js 补间）。
+    // 先画起点再开遮罩，避免开场动画被遮罩透明度过渡吃掉。
+    const from = img.getBoundingClientRect()
+    const enter = () => {
+      const zi = zoomImg()
+      const { naturalWidth: nw, naturalHeight: nh } = zi
+      if (!nw || !nh)
+        return
+      if (zoomReduceMotion) {
+        paint()
+        return
+      }
+      const vw = innerWidth
+      const vh = innerHeight
+      zoomState.tx = from.left + from.width / 2 - vw / 2
+      zoomState.ty = from.top + from.height / 2 - vh / 2
+      zoomState.s = from.width / (nw * displayF(nw, nh))
+      paint()
+      tweenState({ tx: 0, ty: 0, s: 1, duration: 520, ease: 'outExpo' })
+    }
+    const zi = zoomImg()
+    requestAnimationFrame(() => {
+      zoomOverlay!.classList.add('open')
+      if (!zoomReduceMotion)
+        animate(zoomMask(), { opacity: 1, duration: 200, ease: 'outCubic' })
+      if (zi.complete)
+        enter()
+      else
+        zi.addEventListener('load', enter, { once: true })
+    })
+  }
+  const zoomClick = (event: MouseEvent) => {
+    const target = event.target as Element | null
+    if (!target)
+      return
+    const img = target.closest<HTMLImageElement>('.prose img')
+    if (img) {
+      openZoom(img)
+      return
+    }
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open'))
+      return
+    if (target.closest('.zoom-mask') || target.closest('.zoom-close')) {
+      closeZoom()
+    }
+    else if (target.closest('.zoom-prev')) {
+      slideTo(-1)
+    }
+    else if (target.closest('.zoom-next')) {
+      slideTo(1)
+    }
+    else {
+      const action = (target.closest<HTMLButtonElement>('.zoom-tool'))?.dataset.action
+      if (action === 'zoom-in') {
+        setTransform(Math.min(zoomState.s * 2, 7), zoomState.r)
+      }
+      else if (action === 'zoom-out') {
+        setTransform(Math.max(zoomState.s / 2, 0.2), zoomState.r)
+      }
+      else if (action === 'rotate-l') {
+        setTransform(zoomState.s, zoomState.r - 90)
+      }
+      else if (action === 'rotate-r') {
+        setTransform(zoomState.s, zoomState.r + 90)
+      }
+      else if (action === 'reset') {
+        zoomState.tx = 0
+        zoomState.ty = 0
+        setTransform(1, 0)
+      }
+    }
+  }
+  document.addEventListener('click', zoomClick)
+  // 滚轮 / 触摸板：ctrlKey（触摸板捏合）→ 连续缩放。
+  // 其余事件区分触摸板平移 vs 鼠标滚轮缩放：
+  // - deltaMode 1（Firefox 鼠标滚轮行模式）→ 缩放
+  // - 与上一事件间隔 < 120ms → 同一手势延续，沿用上次分类
+  //   （触摸板轻扫/惯性滚动是一串连续事件；鼠标滚轮是离散事件）
+  // - 孤立事件按幅度判定：< 53 → 触摸板平移，否则鼠标滚轮缩放。
+  // 已知局限：快速轻扫的**首个**事件幅度可能超过阈值被误判成缩放
+  // （无 API 可区分触摸板与鼠标滚轮，Google Maps 同款局限），延续事件会归正。
+  document.addEventListener('wheel', (event) => {
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open') || zoomAnim)
+      return
+    event.preventDefault()
+    const dy = event.deltaY * (event.deltaMode === 1 ? 16 : 1)
+    if (event.ctrlKey) {
+      const newS = Math.min(Math.max(zoomState.s * Math.exp(-dy * 0.01), 0.2), 7)
+      if (newS !== zoomState.s)
+        zoomAtPoint(event.clientX, event.clientY, newS)
+      return
+    }
+    const now = performance.now()
+    const burst = now - zoomWheelLast < 120
+    zoomWheelLast = now
+    if (event.deltaMode === 1) {
+      zoomWheelPan = false
+    }
+    else {
+      zoomWheelPan = burst ? zoomWheelPan : Math.abs(dy) < 53
+    }
+    if (zoomWheelPan) {
+      // 触摸板双指平移：跟随手势方向。wheel 的 delta 符号取决于平台默认滚动
+      // 方向（macOS 自然滚动 vs Windows/Linux 传统滚动，同一手势符号相反），
+      // 按平台翻转。非默认滚动设置下会反向——目前没有 API 可检测该设置。
+      const pan = isMac ? -1 : 1
+      zoomState.tx += pan * event.deltaX
+      zoomState.ty += pan * dy
+      clamp()
+      paint()
+      return
+    }
+    const newS = Math.min(Math.max(zoomState.s * Math.exp(-dy * 0.002), 0.2), 7)
+    if (newS !== zoomState.s)
+      zoomAtPoint(event.clientX, event.clientY, newS)
+  }, { passive: false })
+  document.addEventListener('keydown', (event) => {
+    if (!zoomOverlay || !zoomOverlay.classList.contains('open'))
+      return
+    if (event.key === 'Escape') {
+      closeZoom()
+    }
+    else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      slideTo(-1)
+    }
+    else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      slideTo(1)
+    }
+  })
+  const initImageZoom = () => {
+    document.documentElement.classList.add('zoom-js')
+    zoomOverlay = document.querySelector('.z-zoom')
+    zoomAnim?.cancel()
+    zoomAnim = null
+  }
   document.addEventListener('astro:page-load', init)
   document.addEventListener('astro:page-load', initCodeCopy)
+  document.addEventListener('astro:page-load', initImageZoom)
   init()
   initCodeCopy()
+  initImageZoom()
 })()
 </script>
 

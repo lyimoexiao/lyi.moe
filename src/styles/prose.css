@@ -261,6 +261,211 @@ html.dark .prose img {
   outline-color: hsl(0 0% 100% / 10%);
 }
 
+/* ---------- Image zoom preview ---------- */
+
+/* 预览器启用后（BaseHead 脚本注入 zoom-js）文章图片才有放大光标。 */
+.zoom-js .prose img {
+  cursor: zoom-in;
+}
+
+/* 全屏查看器，交互与视觉参考 Element Plus el-image：遮罩点击 / 右上角
+   关闭按钮 / Esc 关闭，图片列表左右切换，底部工具栏缩放旋转。
+   背景拆成独立 .zoom-mask 元素：关闭飞回时只淡出背景、图片保持不透明，
+   避免图片跟着遮罩一起变透明（幽灵缩放）。遮罩恒用站点暗色背景
+   （hsl(var(--hue) 12% 7%)），任意明暗主题下图片都突出。 */
+.z-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  touch-action: none;
+}
+
+.zoom-mask {
+  position: absolute;
+  inset: 0;
+  background-color: hsl(var(--hue) 12% 7% / 90%);
+  backdrop-filter: blur(8px);
+  cursor: zoom-out;
+  opacity: 0;
+}
+
+/* 打开/关闭的背景淡入淡出由脚本对 .zoom-mask 用 anime.js 驱动
+   （.open 仅作状态标记，无 CSS 视觉规则） */
+.z-zoom.open .zoom-mask {
+  opacity: 1;
+}
+
+/* 缩放 / 旋转 / 平移 / 切换动画均由脚本写入 .zoom-stage 的内联 transform
+   （anime.js 驱动）。stage 内联收缩到图片尺寸，其中心即图片中心；
+   description 绝对定位于图片正下方，随图片一起缩放/平移/旋转 */
+.z-zoom .zoom-stage {
+  position: relative;
+  display: inline-block;
+}
+
+.z-zoom .zoom-img {
+  display: block;
+  max-width: min(94vw, 100%);
+  max-height: 82vh;
+  border-radius: 10px;
+  box-shadow: 0 24px 64px hsl(0 0% 0% / 40%);
+  outline: 1px solid hsl(0 0% 100% / 10%);
+  outline-offset: -1px;
+  transform-origin: center;
+  user-select: none;
+}
+
+/* 有说明文字时压缩图片高度，给底部工具栏让位（脚本切换 has-caption） */
+.z-zoom.has-caption .zoom-img {
+  max-height: 70vh;
+}
+
+/* 放大/旋转后可拖拽平移：抓取光标（pannable 由脚本随状态切换） */
+.z-zoom.pannable .zoom-img {
+  cursor: grab;
+}
+
+.z-zoom.pannable.panning .zoom-img {
+  cursor: grabbing;
+}
+
+/* 图片说明（alt 文字）：绝对定位于图片正下方居中，跟随 stage 变换。
+   高图时由 has-caption 压缩图片高度避让底部工具栏 */
+.z-zoom .zoom-caption {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(60ch, 92vw);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+  text-align: center;
+  color: hsl(var(--hue) 10% 78%);
+  transition: opacity 0.15s;
+}
+
+/* 左右切换按钮：悬停遮罩时淡入（el-image 同款） */
+.z-zoom .zoom-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  border-radius: 9999px;
+  background-color: hsl(var(--hue) 12% 15% / 60%);
+  color: hsl(var(--hue) 15% 92%);
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+}
+
+.z-zoom:hover .zoom-nav {
+  opacity: 1;
+}
+
+.z-zoom .zoom-nav:hover,
+.z-zoom .zoom-nav:focus-visible {
+  background-color: hsl(var(--hue) 12% 22%);
+}
+
+.z-zoom .zoom-prev {
+  left: 1rem;
+}
+
+.z-zoom .zoom-next {
+  right: 1rem;
+}
+
+/* 底部工具栏：放大 / 缩小 / 原始大小 / 左右旋转 */
+.z-zoom .zoom-toolbar {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--hue) 12% 15% / 75%);
+  backdrop-filter: blur(8px);
+}
+
+.z-zoom .zoom-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 9999px;
+  background: none;
+  color: hsl(var(--hue) 10% 78%);
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.z-zoom .zoom-tool:hover,
+.z-zoom .zoom-tool:focus-visible {
+  color: hsl(var(--hue) 15% 92%);
+  background-color: hsl(var(--hue) 12% 22% / 60%);
+}
+
+/* 关闭按钮：右上角，对齐 .btn-header 的悬浮淡入样式 */
+.z-zoom .zoom-close {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: hsl(var(--hue) 15% 92%);
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s;
+}
+
+.z-zoom .zoom-close:hover,
+.z-zoom .zoom-close:focus-visible {
+  opacity: 1;
+}
+
+/* 关闭瞬间（closing）让控制件全部淡出，只留图片飞回文章；
+   放在本段末尾保证优先级高于 .z-zoom:hover .zoom-nav 等规则 */
+.z-zoom.closing .zoom-toolbar,
+.z-zoom.closing .zoom-nav,
+.z-zoom.closing .zoom-close,
+.z-zoom.closing .zoom-caption {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* 动画均由 anime.js 驱动，prefers-reduced-motion 的降级在脚本内处理 */
+
 .prose hr {
   border: none;
   border-top: 1px solid var(--c-border);

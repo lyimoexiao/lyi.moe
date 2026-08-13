@@ -9,7 +9,7 @@ import {
 export default defineConfig({
   // Icon classes referenced from scripts (copy button) are not visible to
   // the scanner, which only sees rendered template output.
-  safelist: ['i-ph-copy', 'i-ph-check', 'i-ph-arrow-up-right', 'i-ph-image-broken'],
+  safelist: ['i-ph-copy', 'i-ph-check', 'i-ph-arrow-up-right', 'i-ph-image-broken', 'i-ph-x', 'i-ph-arrow-left', 'i-ph-arrow-right', 'i-ph-magnifying-glass-plus', 'i-ph-magnifying-glass-minus', 'i-ph-arrows-out', 'i-ph-arrow-counter-clockwise', 'i-ph-arrow-clockwise'],
   // config.ts is a plain .ts module: the default pipeline include
   // (jsx/tsx/vue/svelte/astro/html) skips it, and the filesystem scan applies
   // the same filter, so its icon/color classes would never be extracted.
