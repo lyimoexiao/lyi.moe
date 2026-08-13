@@ -66,6 +66,15 @@ export const feeds: FeedGroup[] = [
         date: '2023-04-04',
         feed: '',
       },
+      {
+        author: '林德熙',
+        desc: '微软最具价值专家和 .NET 基金会成员',
+        link: 'https://blog.lindexi.com/',
+        icon: 'https://blog.lindexi.com/img/avatar.png',
+        avatar: 'https://blog.lindexi.com/img/avatar.png',
+        date: '2022-05-22',
+        feed: '',
+      },
     ],
   },
 
