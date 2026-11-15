@@ -73,7 +73,7 @@ export const siteConfig = {
 // 部署方式参考 https://twikoo.js.org/quick-start.html
 export const twikooConfig = {
   /** Twikoo 环境 ID：腾讯云环境填 envId；Vercel/自建环境填完整地址（如 https://xxx.vercel.app）。 */
-  envId: 'https://twikoo.66ccff.love',
+  envId: 'https://twikoo.lyi.moe',
   /** 环境地域：腾讯云环境填 ap-shanghai 或 ap-guangzhou；Vercel 环境留空。 */
   region: '',
   /** 评论区语言，如 zh-CN / en；留空时跟随当前页面语言。 */
