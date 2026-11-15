@@ -6,18 +6,23 @@ import { getLocale, useTranslations } from '../i18n/ui'
 interface Props {
 	/** Override the comment path for this page; defaults to the current URL. */
 	path?: string
+	/** Section heading; `false` hides it (e.g. on a guestbook page). */
+	heading?: string | false
 }
 
-const { path } = Astro.props
 const locale = getLocale(Astro.currentLocale)
 const t = useTranslations(locale)
+const { path, heading = t('post.comments') } = Astro.props
 const enabled = Boolean(twikooConfig.envId)
 ---
 
 {
 	enabled && (
-		<section class="mt-12 pt-8 border-t border-base" aria-labelledby="twikoo-title">
-			<h2 id="twikoo-title" class="font-title text-xl font-600">{t('post.comments')}</h2>
+		<section
+  class:list={['border-base', heading === false ? 'mt-8' : 'mt-12 border-t pt-8']}
+  aria-labelledby={heading === false ? undefined : 'twikoo-title'}
+		>
+			{heading !== false && <h2 id="twikoo-title" class="font-title text-xl font-600">{heading}</h2>}
 			{/* 样式以静态资源引入（?url），不依赖 JS 注入，View Transitions 换页后仍保留。 */}
 			<link rel="stylesheet" href={twikooCssUrl} />
 			<div id="twikoo" class="mt-3" data-path={path} />
@@ -75,28 +80,8 @@ const enabled = Boolean(twikooConfig.envId)
     color: var(--c-accent-text);
   }
 
-  /* 评论加载中的 loading：UnoCSS preflight 会把 svg 变成 block，
-     Element UI 默认的 text-align:center 不再生效，改用 flex 居中。 */
-  #twikoo .el-loading-mask {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #twikoo .el-loading-spinner {
-    position: static;
-    top: auto;
-    margin: 0;
-    width: auto;
-  }
-
-  #twikoo .el-loading-spinner .circular {
-    margin: 0 auto;
-  }
-
   /* 输入框 / 文本域 */
-  #twikoo .el-input__inner,
-  #twikoo .el-textarea__inner {
+  #twikoo .tk-input__inner {
     background-color: var(--c-bg-2);
     border: 1px solid var(--c-border);
     border-radius: 0.5rem;
@@ -105,91 +90,101 @@ const enabled = Boolean(twikooConfig.envId)
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  #twikoo .el-input__inner::placeholder,
-  #twikoo .el-textarea__inner::placeholder {
+  #twikoo .tk-input__inner::placeholder {
     color: var(--c-text-3);
   }
 
-  #twikoo .el-input__inner:hover,
-  #twikoo .el-textarea__inner:hover {
+  #twikoo .tk-input__inner:hover {
     border-color: color-mix(in srgb, var(--c-text-2) 40%, var(--c-border));
   }
 
-  #twikoo .el-input__inner:focus,
-  #twikoo .el-textarea__inner:focus {
+  #twikoo .tk-input__inner:focus {
     outline: none;
     border-color: var(--c-accent-text);
     box-shadow: 0 0 0 3px var(--c-accent-soft);
   }
 
-  #twikoo .el-input-group__append,
-  #twikoo .el-input-group__prepend {
+  #twikoo .tk-input-group__append,
+  #twikoo .tk-input-group__prepend {
     background-color: var(--c-bg-3);
     border-color: var(--c-border);
     color: var(--c-text-2);
     font-size: 0.8125rem;
   }
 
-  /* 输入组的前缀/后缀圆角与输入框（0.5rem）对齐 */
-  #twikoo .el-input-group--prepend .el-input-group__prepend {
+  /* 输入组的前缀/后缀圆角与输入框（0.5rem）对齐：
+     输入框只圆自己那一侧的角，是首/尾子元素时补上外侧圆角。 */
+  #twikoo .tk-input--group .tk-input__inner {
+    border-radius: 0;
+  }
+
+  #twikoo .tk-input--group .tk-input__inner:first-child {
     border-radius: 0.5rem 0 0 0.5rem;
   }
 
-  #twikoo .el-input-group--prepend .el-input__inner {
+  #twikoo .tk-input--group .tk-input__inner:last-child {
     border-radius: 0 0.5rem 0.5rem 0;
   }
 
-  #twikoo .el-input-group--append .el-input__inner {
+  #twikoo .tk-input--group .tk-input__inner:first-child:last-child {
+    border-radius: 0.5rem;
+  }
+
+  #twikoo .tk-input--group .tk-input-group__prepend {
     border-radius: 0.5rem 0 0 0.5rem;
   }
 
-  #twikoo .el-input-group--append .el-input-group__append {
+  #twikoo .tk-input--group .tk-input-group__append {
     border-radius: 0 0.5rem 0.5rem 0;
   }
 
   /* 管理面板（深色遮罩）里的输入组用半透明白 */
-  #twikoo .tk-admin .el-input-group__prepend,
-  #twikoo .tk-admin .el-input-group__append {
+  #twikoo .tk-admin .tk-input-group__prepend,
+  #twikoo .tk-admin .tk-input-group__append {
     background-color: rgb(255 255 255 / 8%);
     border-color: rgb(255 255 255 / 16%);
     color: rgb(255 255 255 / 72%);
   }
 
   /* 按钮：默认描边、主按钮用强调色 */
-  #twikoo .el-button {
+  #twikoo .tk-button {
     border-radius: 0.5rem;
     font-size: 0.8125rem;
     transition: color 0.2s, background-color 0.2s, border-color 0.2s, opacity 0.2s;
   }
 
-  #twikoo .el-button:not(.el-button--primary):not(.el-button--text) {
+  #twikoo .tk-button:not(.tk-button--primary):not(.tk-button--text) {
     background-color: transparent;
     border-color: var(--c-border);
     color: var(--c-text-2);
   }
 
-  #twikoo .el-button:not(.el-button--primary):not(.el-button--text):hover,
-  #twikoo .el-button:not(.el-button--primary):not(.el-button--text):focus {
+  #twikoo .tk-button:not(.tk-button--primary):not(.tk-button--text):hover,
+  #twikoo .tk-button:not(.tk-button--primary):not(.tk-button--text):focus {
     color: var(--c-accent-text);
     border-color: var(--c-accent-text);
     background-color: var(--c-accent-soft);
   }
 
-  #twikoo .el-button--primary {
+  #twikoo .tk-button--primary {
     background-color: var(--c-accent-text);
     border-color: var(--c-accent-text);
     color: #fff;
   }
 
-  #twikoo .el-button--primary:hover,
-  #twikoo .el-button--primary:focus {
+  #twikoo .tk-button--primary:hover,
+  #twikoo .tk-button--primary:focus {
     background-color: color-mix(in srgb, var(--c-accent-text) 85%, #fff);
     border-color: color-mix(in srgb, var(--c-accent-text) 85%, #fff);
     color: #fff;
   }
 
-  #twikoo .el-button.is-disabled,
-  #twikoo .el-button--primary.is-disabled {
+  #twikoo .tk-button--text {
+    color: var(--c-accent-text);
+  }
+
+  #twikoo .tk-button.is-disabled,
+  #twikoo .tk-button--primary.is-disabled {
     background-color: var(--c-bg-3);
     border-color: var(--c-border);
     color: var(--c-text-3);
@@ -322,7 +317,7 @@ const enabled = Boolean(twikooConfig.envId)
       mask: var(--twikoo-icon-thumb-up-solid) center / contain no-repeat;
     }
 
-    #twikoo .tk-action-icon:has(svg path[d^="M360"]) {
+    #twikoo .tk-action-icon:has(svg path[d^="m360"]) {
       background-color: currentColor;
       -webkit-mask: var(--twikoo-icon-thumb-down) center / contain no-repeat;
       mask: var(--twikoo-icon-thumb-down) center / contain no-repeat;
@@ -347,7 +342,9 @@ const enabled = Boolean(twikooConfig.envId)
   }
 
   #twikoo .tk-extras,
-  #twikoo .tk-icon {
+  #twikoo .tk-input__suffix,
+  #twikoo .tk-input__count,
+  #twikoo .tk-comments-no {
     color: var(--c-text-3);
   }
 
@@ -407,7 +404,7 @@ const enabled = Boolean(twikooConfig.envId)
 // a plain URL here, so the tcb code path is never used. The stylesheet is
 // still emitted statically by the build (see the <link> above), so the page
 // stays styled even if this module fails to load.
-import twikoo from 'twikoo/dist/twikoo.min.js'
+import twikoo from 'twikoo'
 import { twikooConfig } from '../config'
 
 const envId = twikooConfig.envId

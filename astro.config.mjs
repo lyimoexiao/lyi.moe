@@ -128,6 +128,17 @@ export default defineConfig({
   // (ERR_OUTDATED_OPTIMIZED_DEP). Serving the request instead of throwing
   // eliminates the 504 white-screen without affecting the build.
   vite: {
+    resolve: {
+      alias: [
+        {
+          // twikoo 2.x only exports its JS entry (package.json "exports"), so the
+          // stylesheet that lives next to it must be resolved explicitly. The
+          // regex keeps the `?url` query suffix intact.
+          find: /^twikoo\/dist\/(.*)$/,
+          replacement: `${fileURLToPath(new URL('./node_modules/twikoo/dist/', import.meta.url))}$1`,
+        },
+      ],
+    },
     build: {
       // 字体不内联成 base64：unicode-range 分包靠独立文件按需加载
       assetsInlineLimit: 0,

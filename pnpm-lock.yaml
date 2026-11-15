@@ -27,8 +27,8 @@ importers:
         specifier: ^0.35.0
         version: 0.35.3(@types/node@24.13.3)
       twikoo:
-        specifier: 1.7.15
-        version: 1.7.15
+        specifier: 2.0.17
+        version: 2.0.17
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^9.2.0
@@ -1297,6 +1297,9 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
+
+  '@twikoojs/shared@2.0.17':
+    resolution: {integrity: sha512-pE3scZcxAiVrQjpDCtUlZxXax7F3FL7YJS/+epZqJX9Ja9qJWrCxl6Y2aOG7bqzmnnGDR/QNB88jrq67lYtYPQ==}
 
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
@@ -3378,8 +3381,8 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  twikoo@1.7.15:
-    resolution: {integrity: sha512-aifZ2QnuknWaxsoXRTRIzQ5xY5sP4n1RPD6UwNotIYarzdgjT+Vzp0tObMhjOXhKAJX6iVqsDgwA2gOmDuaPtw==}
+  twikoo@2.0.17:
+    resolution: {integrity: sha512-TX8y0jUoaIZkTUAvW6zzJoZr9/F8iWmoM/q1DqVROHtjfEqGz2FFLZ8II0yyRu92SL41fodk1Ay/L+xAU7mJhw==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -4825,6 +4828,8 @@ snapshots:
       espree: 10.4.0
       estraverse: 5.3.0
       picomatch: 4.0.5
+
+  '@twikoojs/shared@2.0.17': {}
 
   '@tybys/wasm-util@0.10.3':
     dependencies:
@@ -7663,7 +7668,9 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  twikoo@1.7.15: {}
+  twikoo@2.0.17:
+    dependencies:
+      '@twikoojs/shared': 2.0.17
 
   type-check@0.4.0:
     dependencies:

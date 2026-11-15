@@ -18,11 +18,3 @@ declare module 'twikoo' {
 
   export default twikoo
 }
-
-declare module 'twikoo/dist/twikoo.min.js' {
-  const twikoo: {
-    init: (options: import('twikoo').TwikooInitOptions) => Promise<void>
-  }
-
-  export default twikoo
-}
