@@ -13,14 +13,14 @@ const t = useTranslations(locale)
 <!doctype html>
 <html lang={locale === 'en' ? 'en' : 'zh-CN'}>
 	<head>
-		<BaseHead title={`${t('guestbook.title')} - ${siteTitle(locale)}`} description={t('guestbook.description')} />
+		<BaseHead title={`${t('message.title')} - ${siteTitle(locale)}`} description={t('message.description')} />
 	</head>
 	<body>
 		<Header />
 		<main class="px-4 py-16 sm:px-6">
 			<div class="mx-auto max-w-3xl">
-				<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('guestbook.title')}</h1>
-				{twikooConfig.envId && <Twikoo path="/guestbook" heading={false} />}
+				<h1 class="font-title text-3xl tracking-tight font-700 text-balance">{t('message.title')}</h1>
+				{twikooConfig.envId && <Twikoo path="/message" heading={false} />}
 			</div>
 		</main>
 		<Footer />
