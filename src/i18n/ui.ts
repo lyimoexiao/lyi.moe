@@ -25,7 +25,7 @@ export const ui = {
     'toc.close': '关闭目录',
     'about.title': '关于',
     'about.body': '这里是关于页面，内容即将上线。',
-    'guestbook.title': '留言板',
+    'guestbook.title': '留言',
     'guestbook.description': '在留言板留下你想说的话，或与其他访客交流。',
     'rss.feed': 'RSS 订阅',
     'post.license': '本文采用 CC BY-NC-SA 4.0 许可协议',
