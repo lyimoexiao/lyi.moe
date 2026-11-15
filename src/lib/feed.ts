@@ -75,12 +75,6 @@ export const feeds: FeedGroup[] = [
         date: '2022-05-22',
         feed: '',
       },
-    ],
-  },
-
-  {
-    name: { 'zh-cn': '邻居们', 'en': 'Neighbors' },
-    entries: [
       {
         author: '纸鹿摸鱼处',
         desc: '纸鹿至麓不知路，支炉制露不止漉',
@@ -91,15 +85,39 @@ export const feeds: FeedGroup[] = [
         feed: 'https://blog.zhilu.site/atom.xml',
       },
       {
-        author: `Dokiu's Blog`,
-        desc: '不知道干什么就只有摆烂了',
-        link: 'https://blog.adokiu.com',
-        icon: 'https://blog.adokiu.com/avatar.png',
-        avatar: 'https://blog.adokiu.com/avatar.png',
-        date: '2026-01-25',
-        feed: 'https://blog.adokiu.com/rss.xml',
+        author: '桃江老凌的小破站',
+        desc: '',
+        link: 'https://www.steveling.cn',
+        icon: 'https://www.steveling.cn/img/icon.jpg',
+        avatar: 'https://www.steveling.cn/img/icon.jpg',
+        date: '2022-05-13',
+        feed: 'https://www.steveling.cn/rss.xml',
       },
+      {
+        author: '谭汐霏',
+        desc: '去把这个并不完美的世界，变成你所期望的样子。',
+        link: 'https://www.shirleytan.top/',
+        icon: 'https://www.shirleytan.top/upload/IMG_20260715_191651%20(1).png',
+        avatar: 'https://www.shirleytan.top/upload/IMG_20260715_191651%20(1).png',
+        date: '2022-05-13',
+        feed: 'https://www.shirleytan.top/rss.xml',
+      }
     ],
-
   },
+
+  // {
+  //   name: { 'zh-cn': '邻居们', 'en': 'Neighbors' },
+  //   entries: [
+  //     {
+  //       author: '纸鹿摸鱼处',
+  //       desc: '纸鹿至麓不知路，支炉制露不止漉',
+  //       link: 'https://blog.zhilu.site',
+  //       icon: 'https://www.zhilu.site/api/avatar.png',
+  //       avatar: 'https://www.zhilu.site/api/avatar.png',
+  //       date: '2025-12-15',
+  //       feed: 'https://blog.zhilu.site/atom.xml',
+  //     }
+  //   ],
+
+  // },
 ]
