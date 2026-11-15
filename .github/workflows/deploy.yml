@@ -1,0 +1,94 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two deploys at the same time: a cancelled rsync could leave the
+# server half-updated.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+      SSH_USER: ${{ secrets.DEPLOY_USER }}
+      # Optional; defaults to 22 / /var/www/lyi.moe when the secret is unset.
+      SSH_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/var/www/lyi.moe' }}
+    steps:
+      - name: Check deploy configuration
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -n "$SSH_HOST" ] || missing+=(DEPLOY_HOST)
+          [ -n "$SSH_USER" ] || missing+=(DEPLOY_USER)
+          [ -n "$DEPLOY_SSH_KEY" ] || missing+=(DEPLOY_SSH_KEY)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repository secret(s): ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `prebuild` runs scripts/subset-fonts.sh, which exits early on CI
+      # (fonts-src/ is gitignored), so the committed woff2 files are used.
+      - name: Build
+        run: pnpm build
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          # Optional pin: `ssh-keyscan` output or a known_hosts line. Set it to
+          # avoid trusting whatever host answers on first connect.
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          else
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" 2>/dev/null > "$HOME/.ssh/known_hosts"
+          fi
+          chmod 644 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy dist
+        run: |
+          set -euo pipefail
+          TARGET_PATH="${DEPLOY_PATH%/}"
+          SSH_OPTS=(-p "$SSH_PORT" -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes -o BatchMode=yes)
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p '$TARGET_PATH'"
+          # -rlptz (instead of -a) skips owner/group, so a non-root deploy user
+          # never trips over chown errors. `.well-known/` is excluded so ACME
+          # challenge files on the server survive `--delete`.
+          rsync -rlptz --delete --chmod=D755,F644 \
+            --exclude='.well-known/' \
+            -e "ssh ${SSH_OPTS[*]}" \
+            dist/ "$SSH_USER@$SSH_HOST:$TARGET_PATH/"
