@@ -101,7 +101,7 @@ export const feeds: FeedGroup[] = [
         avatar: 'https://www.shirleytan.top/upload/IMG_20260715_191651%20(1).png',
         date: '2022-05-13',
         feed: 'https://www.shirleytan.top/rss.xml',
-      }
+      },
     ],
   },
 
